@@ -1,27 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Cloud, Lock, Mail } from 'lucide-react';
+import { auth, googleProvider } from '../firebase';
+import { signInWithPopup, onAuthStateChanged } from 'firebase/auth';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    // F5 Persistence Check
+    const storedUser = localStorage.getItem('gheras_admin');
+    if (storedUser) {
+      navigate('/dashboard');
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user && user.email === 'elhassanelsoudy@gmail.com') {
+        localStorage.setItem('gheras_admin', JSON.stringify({ role: 'admin', email: user.email }));
+        navigate('/dashboard');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [navigate]);
+
+  const handleManualLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email === 'elhassanelsoudy@gmail.com' && password === 'Hassan@2016') {
-      localStorage.setItem('gheras_user', JSON.stringify({ role: 'admin', email }));
+    setLoading(true);
+    setError('');
+
+    if (email === 'elhassanelsoudy@gmail.com' && password === 'hassan@2016') {
+      localStorage.setItem('gheras_admin', JSON.stringify({ role: 'admin', email }));
       navigate('/dashboard');
     } else {
-      setError('بيانات الدخول غير صحيحة.');
+      setError('بيانات الدخول غير صحيحة، يرجى المحاولة مرة أخرى.');
     }
+    setLoading(false);
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      if (result.user.email === 'elhassanelsoudy@gmail.com') {
+        localStorage.setItem('gheras_admin', JSON.stringify({ role: 'admin', email: result.user.email }));
+        navigate('/dashboard');
+      } else {
+        setError('هذا الحساب غير مصرح له بالدخول كمسؤول.');
+        auth.signOut();
+      }
+    } catch (err: any) {
+      setError('فشل تسجيل الدخول بواسطة Google: ' + err.message);
+    }
+    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex w-full">
-      {/* Right Side - Branding (emerald-900) */}
-      <div className="hidden lg:flex w-1/2 bg-emerald-900 text-white flex-col justify-center items-center p-12 relative overflow-hidden">
+    <div className="min-h-screen flex w-full font-sans">
+      {/* Right Side - Branding (emerald-950) */}
+      <div className="hidden lg:flex w-1/2 bg-emerald-950 text-white flex-col justify-center items-center p-12 relative overflow-hidden">
         {/* Decorative background shapes */}
         <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
           <div className="absolute top-1/4 -right-20 w-96 h-96 bg-emerald-500 rounded-full blur-3xl"></div>
@@ -29,10 +71,10 @@ const Login: React.FC = () => {
         </div>
         
         <div className="z-10 text-center flex flex-col items-center">
-          <div className="bg-emerald-800/50 p-6 rounded-3xl mb-8 border border-emerald-700/50 backdrop-blur-sm">
+          <div className="bg-emerald-800/50 p-6 rounded-3xl mb-8 border border-emerald-700/50 backdrop-blur-sm shadow-2xl">
             <Cloud size={80} className="text-emerald-300 drop-shadow-lg" />
           </div>
-          <h1 className="text-6xl font-bold mb-6 tracking-tight">غِراس</h1>
+          <h1 className="text-6xl font-bold mb-6 tracking-tight drop-shadow-md">غِراس</h1>
           <h2 className="text-2xl font-light text-emerald-100 mb-8 max-w-md leading-relaxed">
             المنظومة المتكاملة للمحاسبة وإدارة المستودعات
           </h2>
@@ -46,8 +88,8 @@ const Login: React.FC = () => {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-slate-50 relative">
         <div className="w-full max-w-md">
           {/* Glassmorphism Card */}
-          <div className="glass-panel rounded-3xl p-10 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 to-emerald-600"></div>
+          <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-2xl rounded-3xl p-10 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-500 to-emerald-700"></div>
             
             <div className="text-center mb-10">
               <h3 className="text-3xl font-bold text-slate-800 mb-3">تسجيل الدخول</h3>
@@ -55,12 +97,12 @@ const Login: React.FC = () => {
             </div>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border-r-4 border-red-500 text-red-700 rounded-lg text-sm">
+              <div className="mb-6 p-4 bg-red-50 border-r-4 border-red-500 text-red-700 rounded-lg text-sm font-medium">
                 {error}
               </div>
             )}
 
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleManualLogin} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">البريد الإلكتروني</label>
                 <div className="relative">
@@ -73,7 +115,7 @@ const Login: React.FC = () => {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pr-10 pl-4 py-3 bg-white border border-slate-200 rounded-xl text-sm shadow-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all text-slate-800"
+                    className="block w-full pr-10 pl-4 py-3 bg-white/60 border border-slate-200 rounded-xl text-sm shadow-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all text-slate-800"
                     placeholder="admin@gheras.com"
                   />
                 </div>
@@ -91,7 +133,7 @@ const Login: React.FC = () => {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pr-10 pl-4 py-3 bg-white border border-slate-200 rounded-xl text-sm shadow-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all text-slate-800"
+                    className="block w-full pr-10 pl-4 py-3 bg-white/60 border border-slate-200 rounded-xl text-sm shadow-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all text-slate-800"
                     placeholder="••••••••"
                   />
                 </div>
@@ -100,9 +142,10 @@ const Login: React.FC = () => {
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg shadow-emerald-500/30 text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all transform hover:-translate-y-0.5"
+                  disabled={loading}
+                  className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg shadow-emerald-500/30 text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all transform hover:-translate-y-0.5 disabled:opacity-70"
                 >
-                  تسجيل الدخول
+                  {loading ? 'جاري التحقق...' : 'تسجيل الدخول'}
                 </button>
               </div>
               
@@ -118,7 +161,9 @@ const Login: React.FC = () => {
               <div className="mt-6">
                 <button
                   type="button"
-                  className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-slate-200 rounded-xl shadow-sm bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-200"
+                  onClick={handleGoogleLogin}
+                  disabled={loading}
+                  className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-slate-200 rounded-xl shadow-sm bg-white hover:bg-slate-50 text-sm font-medium text-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-200 disabled:opacity-70"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path
@@ -139,7 +184,7 @@ const Login: React.FC = () => {
                     />
                     <path d="M1 1h22v22H1z" fill="none" />
                   </svg>
-                  Google Gmail الدخول بحساب
+                  الدخول بحساب Google Gmail
                 </button>
               </div>
             </form>
