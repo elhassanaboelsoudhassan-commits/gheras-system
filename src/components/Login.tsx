@@ -11,22 +11,7 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // F5 Persistence Check
-    const storedUser = localStorage.getItem('gheras_admin');
-    if (storedUser) {
-      navigate('/dashboard');
-    }
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && user.email === 'elhassanelsoudy@gmail.com') {
-        localStorage.setItem('gheras_admin', JSON.stringify({ role: 'admin', email: user.email }));
-        navigate('/dashboard');
-      }
-    });
-
-    return () => unsubscribe();
-  }, [navigate]);
 
   const handleManualLogin = (e: React.FormEvent) => {
     e.preventDefault();
