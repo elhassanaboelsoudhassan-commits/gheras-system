@@ -12,18 +12,31 @@ function App() {
   const location = useLocation();
 
   useEffect(() => {
+    // 2. Local Admin Bypass Check: skip loading if local session exists
+    const storedUser = localStorage.getItem('gheras_admin');
+    if (storedUser) {
+      setLoading(false);
+      if (window.location.pathname === '/') {
+        navigate('/dashboard');
+      }
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user && user.email === 'elhassanelsoudy@gmail.com') {
         localStorage.setItem('gheras_admin', JSON.stringify({ role: 'admin', email: user.email }));
-        if (location.pathname === '/') {
+        if (window.location.pathname === '/') {
           navigate('/dashboard');
         }
       } else {
-        const storedUser = localStorage.getItem('gheras_admin');
-        if (!storedUser && location.pathname !== '/') {
-          navigate('/');
+        // 1. Fix Infinite Redirect Loop: if no user, direct to login immediately
+        const currentStoredUser = localStorage.getItem('gheras_admin');
+        if (!currentStoredUser) {
+          if (window.location.pathname !== '/') {
+            navigate('/');
+          }
         }
       }
+      // Guarantee loading is false after auth check completes
       setLoading(false);
     });
 
