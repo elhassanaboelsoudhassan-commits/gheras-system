@@ -1,40 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import './index.css';
 
+// 1. المكون المحمي (ProtectedRoute) لمنع التوجيه العشوائي
+const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const isAuthenticated = localStorage.getItem('gheras_admin');
+  return isAuthenticated ? children : <Navigate to="/" replace />;
+};
+
+const PublicRoute = ({ children }: { children: JSX.Element }) => {
+  const isAuthenticated = localStorage.getItem('gheras_admin');
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
+};
+
 function App() {
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
-  const location = useLocation();
+  // 2. تثبيت الحالة المبدئية: Start loading as false if we already have a local session
+  const [loading, setLoading] = useState(() => !localStorage.getItem('gheras_admin'));
 
   useEffect(() => {
-    // 2. Local Admin Bypass Check: skip loading if local session exists
-    const storedUser = localStorage.getItem('gheras_admin');
-    if (storedUser) {
-      setLoading(false);
-      if (window.location.pathname === '/') {
-        navigate('/dashboard');
-      }
-    }
-
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user && user.email === 'elhassanelsoudy@gmail.com') {
         localStorage.setItem('gheras_admin', JSON.stringify({ role: 'admin', email: user.email }));
-        if (window.location.pathname === '/') {
-          navigate('/dashboard');
-        }
-      } else {
-        // 1. Fix Infinite Redirect Loop: if no user, direct to login immediately
-        const currentStoredUser = localStorage.getItem('gheras_admin');
-        if (!currentStoredUser) {
-          if (window.location.pathname !== '/') {
-            navigate('/');
-          }
-        }
       }
       // Guarantee loading is false after auth check completes
       setLoading(false);
@@ -56,8 +46,8 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
     </Routes>
   );
 }
