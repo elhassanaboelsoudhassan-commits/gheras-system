@@ -4,31 +4,13 @@ import Sidebar from './Sidebar';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     // Check if user is logged in
-    const user = localStorage.getItem('gheras_user');
+    const user = localStorage.getItem('gheras_admin');
     if (!user) {
       navigate('/');
-      return;
     }
-
-    // Simulate initial data fetching
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
   }, [navigate]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen bg-slate-50 overflow-hidden font-sans">

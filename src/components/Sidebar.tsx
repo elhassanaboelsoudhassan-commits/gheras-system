@@ -13,12 +13,11 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 const navItems = [
-  { id: 'sales', label: 'المبيعات', icon: ShoppingCart, subItems: ['فاتورة مبيعات', 'مرتجع مبيعات', 'عروض الأسعار', 'تقارير المبيعات'] },
-  { id: 'purchases', label: 'المشتريات', icon: Package, subItems: ['فاتورة مشتريات', 'مرتجع مشتريات', 'أوامر الشراء', 'تقارير المشتريات'] },
-  { id: 'inventory', label: 'المستودعات', icon: LayoutDashboard, subItems: ['جرد المخزون', 'حركة المواد', 'الأصناف', 'بطاقات المستودع'] },
-  { id: 'accounting', label: 'المحاسبة المتقدمة', icon: Calculator, subItems: ['سندات القبض', 'سندات الصرف', 'القيود اليومية', 'ميزان المراجعة', 'شجرة الحسابات'] },
-  { id: 'hr', label: 'الموارد البشرية', icon: Users, subItems: ['الموظفين', 'الرواتب', 'السلف', 'الحضور والانصراف'] },
-  { id: 'settings', label: 'الإعدادات', icon: Settings, subItems: ['إعدادات الشركة', 'الفروع', 'صلاحيات المستخدمين'] },
+  { id: 'sales', label: 'المبيعات وفواتيرها الضريبية', icon: ShoppingCart, subItems: ['فاتورة مبيعات', 'مرتجع مبيعات', 'عروض الأسعار', 'تقارير المبيعات'] },
+  { id: 'purchases', label: 'المشتريات والمصروفات', icon: Package, subItems: ['فاتورة مشتريات', 'سندات صرف', 'المصروفات اليومية', 'تقارير المشتريات'] },
+  { id: 'inventory', label: 'مستودعات المشاتل', icon: LayoutDashboard, subItems: ['جرد المخزون', 'حركة المواد', 'الأصناف', 'بطاقات المستودع'] },
+  { id: 'accounting', label: 'الحسابات الختامية والشجرة', icon: Calculator, subItems: ['سندات القبض', 'سندات الصرف', 'القيود اليومية', 'ميزان المراجعة', 'شجرة الحسابات'] },
+  { id: 'settings', label: 'إعدادات المنشأة', icon: Settings, subItems: ['إعدادات الشركة', 'الفروع', 'صلاحيات المستخدمين'] },
 ];
 
 const Sidebar: React.FC = () => {
@@ -30,12 +29,12 @@ const Sidebar: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('gheras_user');
+    localStorage.removeItem('gheras_admin');
     navigate('/');
   };
 
   return (
-    <aside className="w-72 bg-slate-900 text-slate-300 h-screen flex flex-col shadow-2xl transition-all duration-300">
+    <aside className="w-[285px] bg-slate-900 text-slate-300 h-screen flex flex-col shadow-2xl transition-all duration-300">
       {/* Brand area */}
       <div className="h-20 flex items-center gap-4 px-6 border-b border-slate-800 bg-slate-950/50">
         <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-400">
