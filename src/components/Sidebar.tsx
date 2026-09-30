@@ -23,7 +23,7 @@ const navItems = [
   { id: 'workflow', label: 'مسارات العمل', icon: Settings, subItems: ['صندوق المهام', 'جميع مسارات العمل'] },
 ];
 
-const Sidebar: React.FC = () => {
+const Sidebar: React.FC<{ onNavigate?: (module: string, tab?: string) => void }> = ({ onNavigate }) => {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -95,6 +95,11 @@ const Sidebar: React.FC = () => {
                   {item.subItems.map((sub, idx) => (
                     <button 
                       key={idx}
+                      onClick={() => {
+                        if (onNavigate) {
+                          onNavigate(item.id, sub);
+                        }
+                      }}
                       className="w-full text-right py-2 text-sm text-slate-400 hover:text-emerald-400 hover:translate-x-1 transition-all flex items-center gap-2"
                     >
                       <div className="w-1.5 h-1.5 rounded-full bg-slate-700"></div>
