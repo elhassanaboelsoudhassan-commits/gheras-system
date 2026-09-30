@@ -27,67 +27,55 @@ const Dashboard: React.FC = () => {
         </header>
 
         {/* Workspace */}
-        <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
-          {/* Dashboard Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-slate-50">
+          <div className="mb-8">
+            <h3 className="text-2xl font-bold text-slate-800 mb-2">لوحة التقارير المركزية</h3>
+            <p className="text-slate-500">نظرة شاملة لجميع تقارير المنشأة المتاحة.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {[
-              { title: 'إجمالي المبيعات', value: '1,250,000 ر.س', color: 'from-emerald-500 to-emerald-400' },
-              { title: 'المشتريات', value: '450,000 ر.س', color: 'from-blue-500 to-blue-400' },
-              { title: 'العملاء', value: '1,240', color: 'from-amber-500 to-amber-400' },
-              { title: 'المخزون', value: '8,500 صنف', color: 'from-purple-500 to-purple-400' },
-            ].map((card, idx) => (
-              <div key={idx} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
-                <div className={`absolute top-0 right-0 w-2 h-full bg-gradient-to-b ${card.color}`}></div>
-                <h3 className="text-slate-500 text-sm font-medium mb-2">{card.title}</h3>
-                <p className="text-3xl font-bold text-slate-800">{card.value}</p>
+              {
+                title: 'تقارير المبيعات',
+                colorClass: 'bg-emerald-500',
+                reports: ['ملخص أرصدة العملاء', 'كشف عميل', 'ملخص فواتير المبيعات', 'ملخص الإيصالات المباعة', 'ربحية المنتجات', 'أعمار ديون المبيعات', 'إجمالي المبيعات حسب الفترة', 'التسليمات المعلقة للتجزئة']
+              },
+              {
+                title: 'تقارير المشتريات',
+                colorClass: 'bg-blue-500',
+                reports: ['ملخص أرصدة الموردين', 'كشف مورد', 'ملخص فواتير المشتريات', 'ملخص الإيصالات للمشتروات', 'ملخص مصروفات العهد النقدية', 'أسعار دفع المشتريات', 'ملخص المنتجات المستردة', 'إجمالي المشتريات حسب الفترة', 'التسليمات المعلقة للمشتروات']
+              },
+              {
+                title: 'تقارير المحاسبة',
+                colorClass: 'bg-purple-500',
+                reports: ['دفتر الأستاذ', 'الميزانية العمومية', 'قائمة الدخل', 'ميزان المراجعة', 'كشف حساب', 'كشف أبعاد التقارير', 'الإقرار الضريبي', 'تقرير الفحص الضريبي', 'ملخص الإيصالات العامة']
+              },
+              {
+                title: 'المنتجات والمخزون',
+                colorClass: 'bg-amber-500',
+                reports: ['الأستاذ المخزني', 'المستودع الحالي', 'جرد المخزون الحالي']
+              },
+              {
+                title: 'الموارد البشرية',
+                colorClass: 'bg-rose-500',
+                reports: ['ملخص أرصدة الموظفين', 'كشف موظف', 'تقرير الحضور']
+              }
+            ].map((category, idx) => (
+              <div key={idx} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-all">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className={`w-2 h-8 rounded-full ${category.colorClass}`}></div>
+                  <h4 className="text-xl font-bold text-slate-800">{category.title}</h4>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {category.reports.map((report, rIdx) => (
+                    <button key={rIdx} className="text-right p-3 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100 hover:border-slate-200 transition-colors text-sm font-medium text-slate-700 flex items-center justify-between group">
+                      <span>{report}</span>
+                      <span className="text-slate-400 group-hover:text-emerald-500 transition-colors truncate w-4 rtl:-rotate-180">←</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             ))}
-          </div>
-
-          {/* Large Table Area */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h3 className="text-lg font-bold text-slate-800">أحدث الفواتير</h3>
-              <button className="text-emerald-600 text-sm font-medium hover:text-emerald-700">عرض الكل</button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-right text-sm text-slate-600">
-                <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-100">
-                  <tr>
-                    <th className="px-6 py-4 font-medium">رقم الفاتورة</th>
-                    <th className="px-6 py-4 font-medium">التاريخ</th>
-                    <th className="px-6 py-4 font-medium">العميل</th>
-                    <th className="px-6 py-4 font-medium">القيمة</th>
-                    <th className="px-6 py-4 font-medium">الحالة</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    { id: 'INV-2024-001', date: '2024-05-01', client: 'شركة الأفق المحدودة', amount: '15,000 ر.س', status: 'مدفوعة' },
-                    { id: 'INV-2024-002', date: '2024-05-02', client: 'مؤسسة البناء الحديث', amount: '8,450 ر.س', status: 'معلقة' },
-                    { id: 'INV-2024-003', date: '2024-05-03', client: 'الشركة العالمية للتجارة', amount: '32,100 ر.س', status: 'مدفوعة' },
-                    { id: 'INV-2024-004', date: '2024-05-04', client: 'مجموعة الرواد', amount: '4,200 ر.س', status: 'ملغاة' },
-                    { id: 'INV-2024-005', date: '2024-05-05', client: 'مؤسسة السعادة', amount: '11,800 ر.س', status: 'مدفوعة' },
-                  ].map((row, idx) => (
-                    <tr key={idx} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-medium text-slate-800">{row.id}</td>
-                      <td className="px-6 py-4">{row.date}</td>
-                      <td className="px-6 py-4">{row.client}</td>
-                      <td className="px-6 py-4 font-bold text-slate-800">{row.amount}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          row.status === 'مدفوعة' ? 'bg-emerald-100 text-emerald-700' :
-                          row.status === 'معلقة' ? 'bg-amber-100 text-amber-700' :
-                          'bg-red-100 text-red-700'
-                        }`}>
-                          {row.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
           </div>
         </div>
       </main>

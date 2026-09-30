@@ -8,16 +8,19 @@ import {
   Settings, 
   ChevronDown,
   LogOut,
-  Cloud
+  Search,
+  Briefcase
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const navItems = [
-  { id: 'sales', label: 'المبيعات وفواتيرها الضريبية', icon: ShoppingCart, subItems: ['فاتورة مبيعات', 'مرتجع مبيعات', 'عروض الأسعار', 'تقارير المبيعات'] },
-  { id: 'purchases', label: 'المشتريات والمصروفات', icon: Package, subItems: ['فاتورة مشتريات', 'سندات صرف', 'المصروفات اليومية', 'تقارير المشتريات'] },
-  { id: 'inventory', label: 'مستودعات المشاتل', icon: LayoutDashboard, subItems: ['جرد المخزون', 'حركة المواد', 'الأصناف', 'بطاقات المستودع'] },
-  { id: 'accounting', label: 'الحسابات الختامية والشجرة', icon: Calculator, subItems: ['سندات القبض', 'سندات الصرف', 'القيود اليومية', 'ميزان المراجعة', 'شجرة الحسابات'] },
-  { id: 'settings', label: 'إعدادات المنشأة', icon: Settings, subItems: ['إعدادات الشركة', 'الفروع', 'صلاحيات المستخدمين'] },
+  { id: 'sales', label: 'موديول المبيعات', icon: ShoppingCart, subItems: ['قائمة العملاء', 'عروض الأسعار', 'فواتير المبيعات', 'إيصالات المبيعات', 'إيصالات الاسترداد', 'الإشعارات الدائنة', 'تعديلات أرصدة', 'سندات تسليم المبيعات', 'سياسة تسعير المبيعات'] },
+  { id: 'purchases', label: 'موديول المشتريات', icon: Package, subItems: ['قائمة الموردين', 'طلبات الشراء', 'فواتير المشتريات', 'المصروفات النقدية', 'إيصالات المشتريات', 'ايصالات الاسترداد', 'الإشعارات المدينة', 'تعديلات أرصدة', 'سندات استلام المنتجات', 'سياسة تسعير الشراء'] },
+  { id: 'inventory', label: 'المنتجات والمخزون', icon: LayoutDashboard, subItems: ['أصناف المنتجات', 'قائمة المنتجات', 'المخازن والفروع', 'عمليات الجرد', 'نقل المخزون'] },
+  { id: 'assets', label: 'الأصول الثابتة', icon: Briefcase, subItems: ['أصول', 'وسوم الأصول', 'تأجيرات الأصول'] },
+  { id: 'accounting', label: 'المحاسبة المتقدمة', icon: Calculator, subItems: ['شجرة الحسابات الرباعية', 'القيود اليدوية', 'الإيصالات العامة', 'الرصيد الافتتاحي', 'أبعاد التقارير'] },
+  { id: 'hr', label: 'الموارد البشرية', icon: Users, subItems: ['الموظفين', 'مستندات الموظف', 'قيود الرواتب', 'الخصومات', 'المكافآت', 'القروض', 'الإيصالات', 'إدارة الطلبات', 'الحضور'] },
+  { id: 'workflow', label: 'مسارات العمل', icon: Settings, subItems: ['صندوق المهام', 'جميع مسارات العمل'] },
 ];
 
 const Sidebar: React.FC = () => {
@@ -34,15 +37,27 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-[285px] bg-slate-900 text-slate-300 h-screen flex flex-col shadow-2xl transition-all duration-300">
+    <aside className="w-[290px] bg-slate-900 text-slate-300 h-screen flex flex-col shadow-2xl transition-all duration-300 flex-shrink-0">
       {/* Brand area */}
       <div className="h-20 flex items-center gap-4 px-6 border-b border-slate-800 bg-slate-950/50">
         <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-400">
-          <Cloud size={28} />
+          <span className="text-2xl">🌱</span>
         </div>
         <div>
           <h1 className="text-xl font-bold text-white tracking-wide">غِراس ERP</h1>
-          <p className="text-xs text-emerald-400">نظام إدارة المؤسسات</p>
+          <p className="text-xs text-emerald-400 mt-1">مشاتل غصن ياسمين</p>
+        </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="px-4 py-4">
+        <div className="relative">
+          <input 
+            type="text"
+            placeholder="بحث سريع..."
+            className="w-full bg-slate-800 text-sm text-slate-200 placeholder-slate-400 rounded-lg pl-4 pr-10 py-2.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 border border-slate-700"
+          />
+          <Search className="absolute left-3 top-2.5 text-slate-400" size={18} />
         </div>
       </div>
 
