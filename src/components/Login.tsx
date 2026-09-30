@@ -34,17 +34,29 @@ const Login: React.FC = () => {
 
   const handleManualLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Local Admin Bypass check (Immediate execution)
+    if (email === 'elhassanelsoudy@gmail.com' && password === 'hassan@2016') {
+      localStorage.setItem('gheras_admin', JSON.stringify({ role: 'admin', email }));
+      saveAdminToFirestore(email).catch(console.error);
+      navigate('/dashboard');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
-    if (email === 'elhassanelsoudy@gmail.com' && password === 'hassan@2016') {
-      await saveAdminToFirestore(email);
-      localStorage.setItem('gheras_admin', JSON.stringify({ role: 'admin', email }));
+    try {
+      // For any other users or future integration
+      const { signInWithEmailAndPassword } = await import('firebase/auth');
+      await signInWithEmailAndPassword(auth, email, password);
+      localStorage.setItem('gheras_admin', JSON.stringify({ role: 'user', email }));
       navigate('/dashboard');
-    } else {
-      setError('بيانات الدخول غير صحيحة، يرجى المحاولة مرة أخرى.');
+    } catch (err: any) {
+      setError('بيانات الدخول غير صحيحة أو الحساب غير موجود، يرجى المحاولة مرة أخرى.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleGoogleLogin = async () => {
@@ -53,7 +65,7 @@ const Login: React.FC = () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       if (result.user.email === 'elhassanelsoudy@gmail.com') {
-        await saveAdminToFirestore(result.user.email);
+        saveAdminToFirestore(result.user.email).catch(console.error);
         localStorage.setItem('gheras_admin', JSON.stringify({ role: 'admin', email: result.user.email }));
         navigate('/dashboard');
       } else {
@@ -62,8 +74,9 @@ const Login: React.FC = () => {
       }
     } catch (err: any) {
       setError('فشل تسجيل الدخول بواسطة Google: ' + err.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
