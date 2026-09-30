@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Cloud, Lock, Mail } from 'lucide-react';
-import { auth, googleProvider } from '../firebase';
+import { auth, googleProvider, db } from '../firebase';
 import { signInWithPopup, onAuthStateChanged } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -10,15 +11,34 @@ const Login: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  useEffect(() => {
+    // F5 Persistence Check
+    const storedUser = localStorage.getItem('gheras_admin');
+    if (storedUser) {
+      navigate('/dashboard');
+    }
+  }, [navigate]);
 
+  const saveAdminToFirestore = async (email: string) => {
+    try {
+      const adminDocRef = doc(db, 'users', email);
+      await setDoc(adminDocRef, {
+        email: email,
+        role: 'admin',
+        createdAt: new Date()
+      }, { merge: true });
+    } catch (err) {
+      console.error('Error saving admin to Firestore:', err);
+    }
+  };
 
-
-  const handleManualLogin = (e: React.FormEvent) => {
+  const handleManualLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     if (email === 'elhassanelsoudy@gmail.com' && password === 'hassan@2016') {
+      await saveAdminToFirestore(email);
       localStorage.setItem('gheras_admin', JSON.stringify({ role: 'admin', email }));
       navigate('/dashboard');
     } else {
@@ -33,6 +53,7 @@ const Login: React.FC = () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       if (result.user.email === 'elhassanelsoudy@gmail.com') {
+        await saveAdminToFirestore(result.user.email);
         localStorage.setItem('gheras_admin', JSON.stringify({ role: 'admin', email: result.user.email }));
         navigate('/dashboard');
       } else {
