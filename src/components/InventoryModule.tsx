@@ -1,6 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import { Package, ArrowRightLeft, ClipboardList, TrendingDown, Layers, Barcode, Save, FileSpreadsheet, PlusCircle, CheckCircle, Search } from 'lucide-react';
-import { addItem, getItems, type ItemData } from '../lib/firestoreUtils';
+import { db } from '../firebase';
+import { collection, addDoc, getDocs, updateDoc, doc } from 'firebase/firestore';
+
+export interface ItemData {
+  nameAr: string;
+  nameEn?: string;
+  internalCode: string;
+  barcode: string;
+  mainCategory: string;
+  subCategory?: string;
+  baseUnit: string;
+  conversionFactor?: number;
+  costPrice: number;
+  retailPrice: number;
+  wholesalePrice?: number;
+  minPrice?: number;
+  reorderLimit?: number;
+  maxLimit?: number;
+  location?: string;
+  stockQuantity: number;
+  createdAt?: string;
+}
+
+const addItem = async (item: ItemData) => {
+  try {
+    const docRef = await addDoc(collection(db, 'items'), item);
+    return { success: true, id: docRef.id };
+  } catch (error: any) {
+    console.error("Error adding item: ", error);
+    return { success: false, error: error.message };
+  }
+};
+
+const getItems = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'items'));
+    const items: (ItemData & { id: string })[] = [];
+    querySnapshot.forEach((doc) => {
+      items.push({ id: doc.id, ...doc.data() } as ItemData & { id: string });
+    });
+    return { success: true, data: items };
+  } catch (error: any) {
+    console.error("Error getting items: ", error);
+    return { success: false, error: error.message };
+  }
+};
+
+const calculateStock = async (itemId: string) => {
+  // Placeholder for advanced stock calculation
+  return { success: true, stock: 0 };
+};
+
+const computeWeightedAverage = async (itemId: string) => {
+  // Placeholder for weighted average cost calculation
+  return { success: true, averageCost: 0 };
+};
 
 const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'بطاقة الصنف الشاملة' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -69,6 +124,10 @@ const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'بط
     }
     setIsLoadingItems(false);
   };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'قائمة الأصناف') {
