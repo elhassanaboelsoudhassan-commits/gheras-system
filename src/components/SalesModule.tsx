@@ -455,6 +455,60 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
           
           <div className="mt-6 border-t border-slate-200 pt-4">
             <h4 className="font-bold text-slate-800 mb-3">الأصناف المشتراة</h4>
+            
+            <div className="mb-4">
+              <input 
+                type="text" 
+                placeholder="🔍 امسح الباركود هنا (اضغط Enter للبحث)..." 
+                className="w-full px-4 py-3 rounded-xl border-2 border-emerald-500 bg-emerald-50/50 focus:bg-white focus:ring-4 focus:ring-emerald-500/20 outline-none transition-all font-mono"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const barcode = e.currentTarget.value.trim();
+                    if (!barcode) return;
+                    e.currentTarget.value = ''; // clear input
+                    
+                    const prod = products.find(p => p.barcode === barcode || p.sku === barcode);
+                    if (prod) {
+                      // Check stock first
+                      const stock = prod.branches && invoiceForm.branchId && prod.branches[invoiceForm.branchId] !== undefined 
+                        ? prod.branches[invoiceForm.branchId] 
+                        : (prod.quantity || 0);
+                      
+                      if (stock <= 0) {
+                        setErrorMsg(`المنتج "${prod.name}" نفذت كميته من هذا المخزن.`);
+                        setTimeout(() => setErrorMsg(''), 4000);
+                        return;
+                      }
+
+                      const newItems = [...invoiceForm.items];
+                      const existing = newItems.find(i => i.productId === prod.id);
+                      if (existing) {
+                        if (existing.qty + 1 > stock) {
+                          setErrorMsg(`لا يمكن تجاوز الكمية المتوفرة (${stock})`);
+                          setTimeout(() => setErrorMsg(''), 4000);
+                          return;
+                        }
+                        existing.qty += 1;
+                      } else {
+                        // Replace the empty first row if it exists
+                        if (newItems.length === 1 && newItems[0].productId === '') {
+                          newItems[0] = { productId: prod.id, qty: 1, price: prod.price || 0 };
+                        } else {
+                          newItems.push({ productId: prod.id, qty: 1, price: prod.price || 0 });
+                        }
+                      }
+                      setInvoiceForm({...invoiceForm, items: newItems});
+                      setErrorMsg(''); // clear previous errors
+                    } else {
+                      setErrorMsg('لم يتم العثور على المنتج بهذا الباركود');
+                      setTimeout(() => setErrorMsg(''), 4000);
+                    }
+                  }
+                }}
+              />
+            </div>
+
             {invoiceForm.items.map((item, idx) => (
               <div key={idx} className="flex gap-3 mb-3">
                 <div className="flex-1">
@@ -463,31 +517,48 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
                     newItems[idx].productId = e.target.value;
                     const prod = products.find(p => p.id === e.target.value);
                     if (prod) {
-                      newItems[idx].price = prod.salePrice || 0;
+                      newItems[idx].price = prod.price || 0;
                     }
                     setInvoiceForm({...invoiceForm, items: newItems});
                   }} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50">
-                    <option value="">اختر المنتج...</option>
+                    <option value="">اختر المنتج (أو استخدم الباركود)...</option>
                     {products.map(p => {
                       const stock = p.branches && invoiceForm.branchId && p.branches[invoiceForm.branchId] !== undefined ? p.branches[invoiceForm.branchId] : (p.quantity || 0);
-                      return <option key={p.id} value={p.id}>{p.name} (المخزون: {stock})</option>;
+                      return <option key={p.id} value={p.id} disabled={stock <= 0}>{p.name} (المخزون: {stock})</option>;
                     })}
                   </select>
                 </div>
                 <div className="w-24">
                   <input type="number" placeholder="الكمية" value={item.qty} onChange={e => {
+                    const val = Number(e.target.value);
+                    const prod = products.find(p => p.id === item.productId);
+                    const stock = prod && prod.branches && invoiceForm.branchId && prod.branches[invoiceForm.branchId] !== undefined ? prod.branches[invoiceForm.branchId] : (prod?.quantity || 0);
+                    
+                    if (val > stock) {
+                       setErrorMsg(`لا يمكن تجاوز الكمية المتوفرة (${stock})`);
+                       setTimeout(() => setErrorMsg(''), 4000);
+                       return;
+                    }
                     const newItems = [...invoiceForm.items];
-                    newItems[idx].qty = Number(e.target.value);
+                    newItems[idx].qty = val;
                     setInvoiceForm({...invoiceForm, items: newItems});
                   }} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" min="1" />
                 </div>
                 <div className="w-32">
-                  <input type="number" placeholder="السعر الإفرادي" value={item.price} onChange={e => {
+                  <input type="number" placeholder="السعر" value={item.price} onChange={e => {
                     const newItems = [...invoiceForm.items];
                     newItems[idx].price = Number(e.target.value);
                     setInvoiceForm({...invoiceForm, items: newItems});
                   }} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" min="0" />
                 </div>
+                {invoiceForm.items.length > 1 && (
+                  <button onClick={() => {
+                    const newItems = invoiceForm.items.filter((_, i) => i !== idx);
+                    setInvoiceForm({...invoiceForm, items: newItems});
+                  }} className="px-3 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors">
+                    <X size={20} />
+                  </button>
+                )}
               </div>
             ))}
             <button onClick={() => setInvoiceForm({...invoiceForm, items: [...invoiceForm.items, {productId: '', qty: 1, price: 0}]})} className="text-sm font-bold text-emerald-600 hover:text-emerald-800">+ إضافة صنف آخر</button>

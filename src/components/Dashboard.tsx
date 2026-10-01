@@ -5,6 +5,7 @@ import SalesModule from './SalesModule';
 import PurchasesModule from './PurchasesModule';
 import InventoryModule from './InventoryModule';
 import SettingsModule from './SettingsModule';
+import HRModule from './HRModule';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -94,6 +95,8 @@ const Dashboard: React.FC = () => {
             <InventoryModule initialTab={activeView.tab} />
           ) : activeView.module === 'settings' ? (
             <SettingsModule initialTab={activeView.tab} />
+          ) : activeView.module === 'hr' ? (
+            <HRModule initialTab={activeView.tab} />
           ) : (
             <div className="flex items-center justify-center h-full text-slate-400 text-lg">
               هذا الموديول ({activeView.module}) قيد التطوير...
