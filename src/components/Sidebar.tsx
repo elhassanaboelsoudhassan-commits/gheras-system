@@ -12,7 +12,21 @@ import {
   Briefcase
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { getSettings } from '../lib/firestoreUtils';
+import { db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
+
+const getSettings = async () => {
+  try {
+    const docRef = doc(db, 'settings', 'general');
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { success: true, data: docSnap.data() };
+    }
+    return { success: true, data: { companyNameAr: 'مشاتل غصن يميس' } };
+  } catch (error) {
+    return { success: false, error };
+  }
+};
 
 const navItems = [
   { id: 'sales', label: 'المبيعات', icon: ShoppingCart, subItems: ['العمليات', 'نقطة البيع السريع (POS)', 'مرتجع المبيعات', 'عروض الأسعار'] },
