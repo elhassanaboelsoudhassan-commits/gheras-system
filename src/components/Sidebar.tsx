@@ -21,6 +21,7 @@ const navItems = [
   { id: 'accounting', label: 'المحاسبة المتقدمة', icon: Calculator, subItems: ['شجرة الحسابات الرباعية', 'القيود اليدوية', 'الإيصالات العامة', 'الرصيد الافتتاحي', 'أبعاد التقارير'] },
   { id: 'hr', label: 'الموارد البشرية', icon: Users, subItems: ['الموظفين', 'مستندات الموظف', 'قيود الرواتب', 'الخصومات', 'المكافآت', 'القروض', 'الإيصالات', 'إدارة الطلبات', 'الحضور'] },
   { id: 'workflow', label: 'مسارات العمل', icon: Settings, subItems: ['صندوق المهام', 'جميع مسارات العمل'] },
+  { id: 'settings', label: 'إعدادات النظام', icon: Settings, subItems: ['إعدادات المؤسسة', 'الضرائب', 'المستخدمين والصلاحيات'] },
 ];
 
 const Sidebar: React.FC<{ onNavigate?: (module: string, tab?: string) => void }> = ({ onNavigate }) => {
