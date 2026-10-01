@@ -152,6 +152,35 @@ export const processSale = async (invoiceData: SaleInvoice) => {
   }
 };
 
+// Quotation Interfaces
+export interface QuotationItem {
+  id: string;
+  name: string;
+  qty: number;
+  price: number;
+}
+
+export interface QuotationData {
+  issueDate: string;
+  expiryDate: string;
+  customerName: string;
+  branch: string;
+  items: QuotationItem[];
+  discount: number;
+  total: number;
+  createdAt: string;
+}
+
+export const addQuotation = async (quotationData: Omit<QuotationData, 'id'>) => {
+  try {
+    const docRef = await addDoc(collection(db, 'quotations'), quotationData);
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    console.error("Error adding quotation: ", error);
+    return { success: false, error };
+  }
+};
+
 // HR Interfaces
 export interface EmployeeData {
   empId: string;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, FileText, FileSignature, ArrowRightLeft, Search, Plus, Minus, X, CheckCircle, PauseCircle, LogOut, Printer, QrCode, ShieldCheck, Package, Save } from 'lucide-react';
-import { getItems, processSale, type ItemData, type SaleItem } from '../lib/firestoreUtils';
+import { getItems, processSale, addQuotation, type ItemData, type SaleItem } from '../lib/firestoreUtils';
 
 const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة البيع السريع (POS)' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -9,6 +9,16 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
   const [searchQuery, setSearchQuery] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [notification, setNotification] = useState<{message: string, type: 'success'|'error'} | null>(null);
+
+  // Quotation State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [qIssueDate, setQIssueDate] = useState(new Date().toISOString().split('T')[0]);
+  const [qExpiryDate, setQExpiryDate] = useState('');
+  const [qCustomerName, setQCustomerName] = useState('');
+  const [qBranch, setQBranch] = useState('الفرع الرئيسي');
+  const [qItems, setQItems] = useState<{ id: string, name: string, qty: number, price: number }[]>([]);
+  const [qDiscount, setQDiscount] = useState(0);
+  const [isSavingQuotation, setIsSavingQuotation] = useState(false);
 
   const tabs = ['نقطة البيع السريع (POS)', 'فاتورة مبيعات متقدمة', 'عروض الأسعار', 'مرتجع المبيعات'];
 
@@ -105,6 +115,32 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
       showNotification(result.error || 'حدث خطأ أثناء إتمام العملية', 'error');
     }
     setIsProcessing(false);
+  };
+
+  const handleSaveQuotation = async () => {
+    setIsSavingQuotation(true);
+    const total = qItems.reduce((sum, item) => sum + (item.price * item.qty), 0) - qDiscount;
+    const res = await addQuotation({
+      issueDate: qIssueDate,
+      expiryDate: qExpiryDate,
+      customerName: qCustomerName,
+      branch: qBranch,
+      items: qItems,
+      discount: qDiscount,
+      total,
+      createdAt: new Date().toISOString()
+    });
+
+    if (res.success) {
+      showNotification('تم حفظ عرض السعر بنجاح', 'success');
+      setIsModalOpen(false);
+      setQItems([]);
+      setQCustomerName('');
+      setQDiscount(0);
+    } else {
+      showNotification('حدث خطأ أثناء الحفظ', 'error');
+    }
+    setIsSavingQuotation(false);
   };
 
   const filteredItems = items.filter(item => 
@@ -407,9 +443,140 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
           </div>
           <h3 className="text-2xl font-bold text-slate-800 mb-2">وحدة {activeTab}</h3>
           <p className="text-slate-500 max-w-md">تم تجهيز البنية التحتية لهذه الشاشة لتعمل بنظام استيراد البيانات الذكي من الفواتير الأساسية.</p>
-          <button className="mt-8 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2">
+          <button onClick={() => activeTab === 'عروض الأسعار' && setIsModalOpen(true)} className="mt-8 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2">
             <Plus size={18} /> إضافة مستند جديد
           </button>
+        </div>
+      )}
+
+      {isModalOpen && activeTab === 'عروض الأسعار' && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <FileSignature className="text-emerald-600" />
+                إضافة عرض سعر جديد
+              </h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-rose-500 transition-colors">
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1 space-y-6 custom-scrollbar">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">اسم العميل</label>
+                  <input type="text" value={qCustomerName} onChange={e => setQCustomerName(e.target.value)} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" placeholder="اسم العميل..." />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">الفرع / المخزن</label>
+                  <select value={qBranch} onChange={e => setQBranch(e.target.value)} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500">
+                    <option>الفرع الرئيسي</option>
+                    <option>فرع الرياض</option>
+                    <option>فرع جدة</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">تاريخ الإصدار</label>
+                  <input type="date" value={qIssueDate} onChange={e => setQIssueDate(e.target.value)} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">تاريخ الانتهاء</label>
+                  <input type="date" value={qExpiryDate} onChange={e => setQExpiryDate(e.target.value)} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-bold text-slate-700">منتجات عرض السعر</label>
+                  <button onClick={() => setQItems([...qItems, { id: '', name: '', qty: 1, price: 0 }])} className="text-sm font-bold text-emerald-600 flex items-center gap-1 hover:text-emerald-700">
+                    <Plus size={16} /> إضافة منتج
+                  </button>
+                </div>
+                <div className="border border-slate-200 rounded-xl overflow-hidden">
+                  <table className="w-full text-right text-sm">
+                    <thead className="bg-slate-100 text-slate-700">
+                      <tr>
+                        <th className="p-3 font-bold w-1/2">المنتج</th>
+                        <th className="p-3 font-bold">الكمية</th>
+                        <th className="p-3 font-bold">السعر</th>
+                        <th className="p-3 font-bold">الإجمالي</th>
+                        <th className="p-3 font-bold w-12"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {qItems.map((qItem, index) => (
+                        <tr key={index} className="border-t border-slate-100">
+                          <td className="p-2">
+                            <select 
+                              value={qItem.id} 
+                              onChange={(e) => {
+                                const selected = items.find(i => i.id === e.target.value);
+                                if (selected) {
+                                  const newItems = [...qItems];
+                                  newItems[index] = { ...newItems[index], id: selected.id, name: selected.nameAr, price: selected.retailPrice };
+                                  setQItems(newItems);
+                                }
+                              }}
+                              className="w-full p-2 border border-slate-200 rounded outline-none"
+                            >
+                              <option value="">اختر المنتج...</option>
+                              {items.map(item => (
+                                <option key={item.id} value={item.id}>{item.nameAr}</option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="p-2">
+                            <input type="number" min="1" value={qItem.qty} onChange={e => {
+                              const newItems = [...qItems];
+                              newItems[index].qty = Number(e.target.value) || 1;
+                              setQItems(newItems);
+                            }} className="w-full p-2 border border-slate-200 rounded outline-none" />
+                          </td>
+                          <td className="p-2">
+                            <input type="number" value={qItem.price} onChange={e => {
+                              const newItems = [...qItems];
+                              newItems[index].price = Number(e.target.value) || 0;
+                              setQItems(newItems);
+                            }} className="w-full p-2 border border-slate-200 rounded outline-none" />
+                          </td>
+                          <td className="p-2 font-mono bg-slate-50">{(qItem.qty * qItem.price).toFixed(2)}</td>
+                          <td className="p-2 text-center">
+                            <button onClick={() => setQItems(qItems.filter((_, i) => i !== index))} className="text-slate-400 hover:text-rose-500">
+                              <X size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {qItems.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="p-4 text-center text-slate-500">لم يتم إضافة منتجات بعد.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-4 items-center">
+                <label className="text-sm font-bold text-slate-700">إجمالي الخصم:</label>
+                <input type="number" value={qDiscount} onChange={e => setQDiscount(Number(e.target.value) || 0)} className="w-32 p-2 border border-rose-200 rounded-lg outline-none" placeholder="0.00" />
+              </div>
+            </div>
+            
+            <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+              <div className="font-bold text-lg text-slate-800">
+                الصافي: <span className="font-mono text-emerald-600">{(qItems.reduce((sum, item) => sum + (item.price * item.qty), 0) - qDiscount).toFixed(2)} SAR</span>
+              </div>
+              <button 
+                onClick={handleSaveQuotation} 
+                disabled={isSavingQuotation || qItems.length === 0 || !qCustomerName}
+                className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+              >
+                {isSavingQuotation ? 'جاري الحفظ...' : 'إتمام الحفظ السحابي'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
