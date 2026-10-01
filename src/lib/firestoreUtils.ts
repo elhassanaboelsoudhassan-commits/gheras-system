@@ -1,5 +1,5 @@
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, runTransaction } from 'firebase/firestore';
-import { db } from './firebase';
+import { db } from '../firebase';
 
 export interface ItemData {
   nameAr: string;
