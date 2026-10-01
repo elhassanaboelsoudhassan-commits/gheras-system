@@ -425,3 +425,60 @@ export const computeTrialBalance = async () => {
 
   return { success: true, data: Array.from(accountsMap.values()) };
 };
+
+export interface SalesReturn {
+  originalInvoiceId: string;
+  items: SaleItem[];
+  subTotal: number;
+  vat: number;
+  total: number;
+  refundMethod: string;
+  branchId: string;
+  createdAt: string;
+}
+
+export const processSalesReturn = async (returnData: SalesReturn) => {
+  try {
+    await runTransaction(db, async (transaction) => {
+      // 1. Read all items to ensure we can restock
+      const itemRefs = returnData.items.map(item => doc(db, 'items', item.id));
+      const itemDocs = await Promise.all(itemRefs.map(ref => transaction.get(ref)));
+
+      // 2. Restock
+      itemDocs.forEach((docSnap, index) => {
+        if (docSnap.exists()) {
+          const currentStock = docSnap.data().stockQuantity || 0;
+          const returnedQty = returnData.items[index].qty;
+          transaction.update(docSnap.ref, { stockQuantity: currentStock + returnedQty });
+        }
+      });
+
+      // 3. Create the Sales Return document
+      const returnRef = doc(collection(db, 'sales_returns'));
+      transaction.set(returnRef, returnData);
+
+      // 4. Create the Accounting Journal Entry (Reverse Sale)
+      const journalRef = doc(collection(db, 'journal_entries'));
+      transaction.set(journalRef, {
+        referenceId: returnRef.id,
+        date: returnData.createdAt,
+        type: 'ãÑÊÌÚ ãÈíÚÇÊ',
+        description: ãÑÊÌÚ ãÈíÚÇÊ ááİÇÊæÑÉ \,
+        totalAmount: returnData.total,
+        entries: [
+          // Debit: Sales Revenue
+          { accountName: 'ÅíÑÇÏÇÊ ÇáãÈíÚÇÊ', debit: returnData.subTotal, credit: 0 },
+          // Debit: VAT Payable
+          { accountName: 'ÖÑíÈÉ ÇáŞíãÉ ÇáãÖÇİÉ ÇáãÓÊÍŞÉ', debit: returnData.vat, credit: 0 },
+          // Credit: Cash/Bank
+          { accountName: returnData.refundMethod === 'äŞÏí' ? 'ÇáÕäÏæŞ' : 'ÇáÈäß', debit: 0, credit: returnData.total }
+        ]
+      });
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("Transaction failed: ", error);
+    return { success: false, error: error.message };
+  }
+};

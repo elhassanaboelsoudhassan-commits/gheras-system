@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, FileText, FileSignature, ArrowRightLeft, Search, Plus, Minus, X, CheckCircle, PauseCircle, LogOut, Printer, QrCode, ShieldCheck, Package, Save } from 'lucide-react';
-import { getItems, processSale, addQuotation, type ItemData, type SaleItem } from '../lib/firestoreUtils';
+import { getItems, processSale, addQuotation, processSalesReturn, type ItemData, type SaleItem } from '../lib/firestoreUtils';
 
 const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة البيع السريع (POS)' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -19,6 +19,14 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
   const [qItems, setQItems] = useState<{ id: string, name: string, qty: number, price: number }[]>([]);
   const [qDiscount, setQDiscount] = useState(0);
   const [isSavingQuotation, setIsSavingQuotation] = useState(false);
+
+  // Sales Return State
+  const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
+  const [returnInvoiceId, setReturnInvoiceId] = useState('');
+  const [returnCustomer, setReturnCustomer] = useState('');
+  const [returnBranch, setReturnBranch] = useState('الفرع الرئيسي');
+  const [returnItems, setReturnItems] = useState<{ id: string, name: string, qty: number, price: number }[]>([]);
+  const [isSavingReturn, setIsSavingReturn] = useState(false);
 
   const tabs = ['نقطة البيع السريع (POS)', 'فاتورة مبيعات متقدمة', 'عروض الأسعار', 'مرتجع المبيعات'];
 
@@ -141,6 +149,40 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
       showNotification('حدث خطأ أثناء الحفظ', 'error');
     }
     setIsSavingQuotation(false);
+  };
+
+  const handleSaveReturn = async () => {
+    if (!returnInvoiceId || returnItems.length === 0) {
+      showNotification('يرجى إدخال رقم الفاتورة وإضافة أصناف', 'error');
+      return;
+    }
+    setIsSavingReturn(true);
+    const subTotal = returnItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const vat = subTotal * 0.15;
+    const total = subTotal + vat;
+
+    const res = await processSalesReturn({
+      originalInvoiceId: returnInvoiceId,
+      items: returnItems,
+      subTotal,
+      vat,
+      total,
+      refundMethod: 'نقدي',
+      branchId: returnBranch,
+      createdAt: new Date().toISOString()
+    });
+
+    if (res.success) {
+      showNotification('تم حفظ المرتجع بنجاح وإنشاء القيد', 'success');
+      setIsReturnModalOpen(false);
+      setReturnInvoiceId('');
+      setReturnCustomer('');
+      setReturnItems([]);
+      fetchItems(); // refresh stock
+    } else {
+      showNotification(res.error || 'حدث خطأ', 'error');
+    }
+    setIsSavingReturn(false);
   };
 
   const filteredItems = items.filter(item => 
@@ -443,7 +485,7 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
           </div>
           <h3 className="text-2xl font-bold text-slate-800 mb-2">وحدة {activeTab}</h3>
           <p className="text-slate-500 max-w-md">تم تجهيز البنية التحتية لهذه الشاشة لتعمل بنظام استيراد البيانات الذكي من الفواتير الأساسية.</p>
-          <button onClick={() => activeTab === 'عروض الأسعار' && setIsModalOpen(true)} className="mt-8 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2">
+          <button onClick={() => activeTab === 'عروض الأسعار' ? setIsModalOpen(true) : setIsReturnModalOpen(true)} className="mt-8 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2">
             <Plus size={18} /> إضافة مستند جديد
           </button>
         </div>
@@ -574,6 +616,145 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
                 className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2 disabled:opacity-50"
               >
                 {isSavingQuotation ? 'جاري الحفظ...' : 'إتمام الحفظ السحابي'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isReturnModalOpen && activeTab === 'مرتجع المبيعات' && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up border border-white/20">
+            <div className="p-6 border-b border-slate-200/50 flex justify-between items-center bg-white/50">
+              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <ArrowRightLeft className="text-rose-600" />
+                إضافة مرتجع مبيعات جديد
+              </h2>
+              <button onClick={() => setIsReturnModalOpen(false)} className="text-slate-400 hover:text-rose-500 transition-colors">
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1 space-y-6 custom-scrollbar">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">رقم الفاتورة الأصلية</label>
+                  <div className="relative">
+                    <input type="text" value={returnInvoiceId} onChange={e => setReturnInvoiceId(e.target.value)} className="w-full p-2.5 bg-white/70 border border-slate-200 rounded-xl outline-none focus:border-rose-500 pl-10" placeholder="INV-..." />
+                    <Search className="absolute left-3 top-3 text-slate-400" size={18} />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">اسم العميل (اختياري)</label>
+                  <input type="text" value={returnCustomer} onChange={e => setReturnCustomer(e.target.value)} className="w-full p-2.5 bg-white/70 border border-slate-200 rounded-xl outline-none focus:border-rose-500" placeholder="اسم العميل..." />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">الفرع / المخزن للإرجاع</label>
+                  <select value={returnBranch} onChange={e => setReturnBranch(e.target.value)} className="w-full p-2.5 bg-white/70 border border-slate-200 rounded-xl outline-none focus:border-rose-500">
+                    <option>الفرع الرئيسي</option>
+                    <option>فرع الرياض</option>
+                    <option>فرع جدة</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-bold text-slate-700">الأصناف المرتجعة</label>
+                  <button onClick={() => setReturnItems([...returnItems, { id: '', name: '', qty: 1, price: 0 }])} className="text-sm font-bold text-rose-600 flex items-center gap-1 hover:text-rose-700">
+                    <Plus size={16} /> إضافة صنف للمرتجع
+                  </button>
+                </div>
+                <div className="border border-slate-200/50 rounded-xl overflow-hidden bg-white/50">
+                  <table className="w-full text-right text-sm">
+                    <thead className="bg-slate-100/50 text-slate-700 border-b border-slate-200/50">
+                      <tr>
+                        <th className="p-3 font-bold w-1/2">الصنف</th>
+                        <th className="p-3 font-bold">الكمية المرتجعة</th>
+                        <th className="p-3 font-bold">سعر الوحدة</th>
+                        <th className="p-3 font-bold">الإجمالي الفرعي</th>
+                        <th className="p-3 font-bold w-12"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {returnItems.map((rItem, index) => (
+                        <tr key={index} className="border-t border-slate-100/50 hover:bg-white/40">
+                          <td className="p-2">
+                            <select 
+                              value={rItem.id} 
+                              onChange={(e) => {
+                                const selected = items.find(i => i.id === e.target.value);
+                                if (selected) {
+                                  const newItems = [...returnItems];
+                                  newItems[index] = { ...newItems[index], id: selected.id, name: selected.nameAr, price: selected.retailPrice };
+                                  setReturnItems(newItems);
+                                }
+                              }}
+                              className="w-full p-2 bg-transparent border border-slate-200 rounded outline-none"
+                            >
+                              <option value="">اختر الصنف...</option>
+                              {items.map(item => (
+                                <option key={item.id} value={item.id}>{item.nameAr}</option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="p-2">
+                            <input type="number" min="1" value={rItem.qty} onChange={e => {
+                              const newItems = [...returnItems];
+                              newItems[index].qty = Number(e.target.value) || 1;
+                              setReturnItems(newItems);
+                            }} className="w-full p-2 bg-transparent border border-slate-200 rounded outline-none" />
+                          </td>
+                          <td className="p-2">
+                            <input type="number" value={rItem.price} onChange={e => {
+                              const newItems = [...returnItems];
+                              newItems[index].price = Number(e.target.value) || 0;
+                              setReturnItems(newItems);
+                            }} className="w-full p-2 bg-transparent border border-slate-200 rounded outline-none" />
+                          </td>
+                          <td className="p-2 font-mono">{(rItem.qty * rItem.price).toFixed(2)}</td>
+                          <td className="p-2 text-center">
+                            <button onClick={() => setReturnItems(returnItems.filter((_, i) => i !== index))} className="text-slate-400 hover:text-rose-500">
+                              <X size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {returnItems.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="p-6 text-center text-slate-500">
+                            قم بالبحث عن الفاتورة أو إضافة الأصناف المرتجعة يدوياً.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              <div className="bg-rose-50/50 p-4 rounded-xl border border-rose-100 space-y-2">
+                <div className="flex justify-between text-sm text-slate-600">
+                  <span>المجموع الفرعي للمرتجع:</span>
+                  <span className="font-mono">{returnItems.reduce((sum, item) => sum + (item.price * item.qty), 0).toFixed(2)} SAR</span>
+                </div>
+                <div className="flex justify-between text-sm text-slate-600">
+                  <span>إعادة احتساب ضريبة القيمة المضافة (15%):</span>
+                  <span className="font-mono">{(returnItems.reduce((sum, item) => sum + (item.price * item.qty), 0) * 0.15).toFixed(2)} SAR</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 border-t border-slate-200/50 bg-white/50 flex justify-between items-center backdrop-blur-sm">
+              <div className="font-bold text-lg text-slate-800 flex flex-col">
+                <span className="text-xs text-slate-500 font-normal">صافي القيمة المردودة للصندوق:</span>
+                <span className="font-mono text-rose-600">{(returnItems.reduce((sum, item) => sum + (item.price * item.qty), 0) * 1.15).toFixed(2)} SAR</span>
+              </div>
+              <button 
+                onClick={handleSaveReturn} 
+                disabled={isSavingReturn || returnItems.length === 0 || !returnInvoiceId}
+                className="px-8 py-3 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 transition-colors flex items-center gap-2 disabled:opacity-50 shadow-lg shadow-rose-200"
+              >
+                {isSavingReturn ? 'جاري تأمين وحفظ المرتجع...' : 'تأمين وحفظ المرتجع'}
               </button>
             </div>
           </div>
