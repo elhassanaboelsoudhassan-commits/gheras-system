@@ -1,6 +1,87 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, FileText, PieChart, TrendingUp, BarChart3, Calculator, Download, Search, Layers, FileSpreadsheet } from 'lucide-react';
-import { getJournalEntries, type JournalEntry, computeTrialBalance, type ChartOfAccount } from '../lib/firestoreUtils';
+import { db } from '../firebase';
+import { collection, getDocs } from 'firebase/firestore';
+
+export interface JournalEntryLine {
+  accountName: string;
+  debit: number;
+  credit: number;
+}
+
+export interface JournalEntry {
+  id?: string;
+  referenceId: string;
+  date: string;
+  type: string;
+  description: string;
+  totalAmount: number;
+  entries: JournalEntryLine[];
+}
+
+export interface ChartOfAccount {
+  code: string;
+  name: string;
+  type: 'أصول' | 'خصوم' | 'إيرادات' | 'مصروفات';
+  balance: number;
+}
+
+const getJournalEntries = async (): Promise<{ success: boolean; data?: (JournalEntry & { id: string })[]; error?: any }> => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'journal_entries'));
+    const entries: (JournalEntry & { id: string })[] = [];
+    querySnapshot.forEach((doc) => {
+      entries.push({ id: doc.id, ...doc.data() } as JournalEntry & { id: string });
+    });
+    return { success: true, data: entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) };
+  } catch (error) {
+    console.error("Error getting journal entries: ", error);
+    return { success: false, error };
+  }
+};
+
+const computeTrialBalance = async (): Promise<{ success: boolean; data?: ChartOfAccount[]; error?: any }> => {
+  const res = await getJournalEntries();
+  if (!res.success || !res.data) return { success: false, data: [] };
+
+  const accountsMap = new Map<string, ChartOfAccount>();
+
+  const baseAccounts: ChartOfAccount[] = [
+    { code: '1001', name: 'الصندوق', type: 'أصول', balance: 0 },
+    { code: '1002', name: 'البنك', type: 'أصول', balance: 0 },
+    { code: '1003', name: 'عهد الموظفين', type: 'أصول', balance: 0 },
+    { code: '1004', name: 'سلف الموظفين', type: 'أصول', balance: 0 },
+    { code: '1005', name: 'المخزون', type: 'أصول', balance: 0 },
+    { code: '2001', name: 'ضريبة القيمة المضافة المستحقة', type: 'خصوم', balance: 0 },
+    { code: '2002', name: 'الموردين (ذمم دائنة)', type: 'خصوم', balance: 0 },
+    { code: '3001', name: 'إيرادات المبيعات', type: 'إيرادات', balance: 0 },
+    { code: '3002', name: 'إيرادات أخرى (استقطاعات)', type: 'إيرادات', balance: 0 },
+    { code: '4001', name: 'مصروفات الرواتب والأجور', type: 'مصروفات', balance: 0 },
+    { code: '4002', name: 'تكلفة البضاعة المباعة', type: 'مصروفات', balance: 0 },
+  ];
+
+  baseAccounts.forEach(acc => accountsMap.set(acc.name, acc));
+
+  res.data.forEach(entry => {
+    entry.entries.forEach(line => {
+      let acc = accountsMap.get(line.accountName);
+      if (!acc) {
+        acc = { code: `9999-${Math.floor(Math.random()*1000)}`, name: line.accountName, type: 'مصروفات', balance: 0 };
+        accountsMap.set(line.accountName, acc);
+      }
+      
+      if (acc.type === 'أصول' || acc.type === 'مصروفات') {
+        acc.balance += line.debit;
+        acc.balance -= line.credit;
+      } else {
+        acc.balance += line.credit;
+        acc.balance -= line.debit;
+      }
+    });
+  });
+
+  return { success: true, data: Array.from(accountsMap.values()) };
+};
 
 const AccountingModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'لوحة التقارير المركزية' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
