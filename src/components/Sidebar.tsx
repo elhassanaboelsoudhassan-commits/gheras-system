@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
   ShoppingCart, 
@@ -12,6 +12,7 @@ import {
   Briefcase
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getSettings } from '../lib/firestoreUtils';
 
 const navItems = [
   { id: 'sales', label: 'المبيعات', icon: ShoppingCart, subItems: ['العمليات', 'نقطة البيع السريع (POS)', 'مرتجع المبيعات', 'عروض الأسعار'] },
@@ -24,7 +25,18 @@ const navItems = [
 
 const Sidebar: React.FC<{ onNavigate?: (module: string, tab?: string) => void }> = ({ onNavigate }) => {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState<string>('مشاتل غصن يميس');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const res = await getSettings();
+      if (res.success && res.data && res.data.companyNameAr) {
+        setCompanyName(res.data.companyNameAr);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const user = JSON.parse(localStorage.getItem('gheras_admin') || '{}');
   const isAdmin = user.email === 'elhassanelsoudy@gmail.com';
@@ -52,7 +64,7 @@ const Sidebar: React.FC<{ onNavigate?: (module: string, tab?: string) => void }>
         </div>
         <div>
           <h1 className="text-xl font-bold text-white tracking-wide">غِراس ERP</h1>
-          <p className="text-xs text-emerald-400 mt-1">مشاتل غصن ياسمين</p>
+          <p className="text-xs text-emerald-400 mt-1">{companyName}</p>
         </div>
       </div>
 
