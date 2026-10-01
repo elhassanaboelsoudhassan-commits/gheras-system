@@ -93,7 +93,7 @@ const Login: React.FC = () => {
           <div className="bg-emerald-800/50 p-6 rounded-3xl mb-8 border border-emerald-700/50 backdrop-blur-sm shadow-2xl">
             <Cloud size={80} className="text-emerald-300 drop-shadow-lg" />
           </div>
-          <h1 className="text-6xl font-bold mb-6 tracking-tight drop-shadow-md">غِراس</h1>
+          <h1 className="text-6xl font-bold mb-6 tracking-tight drop-shadow-md">غِراس 🌱</h1>
           <h2 className="text-2xl font-light text-emerald-100 mb-8 max-w-md leading-relaxed">
             المنظومة المتكاملة للمحاسبة وإدارة المستودعات
           </h2>

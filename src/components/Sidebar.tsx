@@ -14,14 +14,11 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 const navItems = [
-  { id: 'sales', label: 'موديول المبيعات', icon: ShoppingCart, subItems: ['قائمة العملاء', 'عروض الأسعار', 'فواتير المبيعات', 'إيصالات المبيعات', 'إيصالات الاسترداد', 'الإشعارات الدائنة', 'تعديلات أرصدة', 'سندات تسليم المبيعات', 'سياسة تسعير المبيعات'] },
-  { id: 'purchases', label: 'موديول المشتريات', icon: Package, subItems: ['قائمة الموردين', 'طلبات الشراء', 'فواتير المشتريات', 'المصروفات النقدية', 'إيصالات المشتريات', 'ايصالات الاسترداد', 'الإشعارات المدينة', 'تعديلات أرصدة', 'سندات استلام المنتجات', 'سياسة تسعير الشراء'] },
-  { id: 'inventory', label: 'المنتجات والمخزون', icon: LayoutDashboard, subItems: ['أصناف المنتجات', 'قائمة المنتجات', 'المخازن والفروع', 'عمليات الجرد', 'نقل المخزون'] },
-  { id: 'assets', label: 'الأصول الثابتة', icon: Briefcase, subItems: ['أصول', 'وسوم الأصول', 'تأجيرات الأصول'] },
-  { id: 'accounting', label: 'المحاسبة المتقدمة', icon: Calculator, subItems: ['شجرة الحسابات الرباعية', 'القيود اليدوية', 'الإيصالات العامة', 'الرصيد الافتتاحي', 'أبعاد التقارير'] },
-  { id: 'hr', label: 'الموارد البشرية', icon: Users, subItems: ['الموظفين', 'مستندات الموظف', 'قيود الرواتب', 'الخصومات', 'المكافآت', 'القروض', 'الإيصالات', 'إدارة الطلبات', 'الحضور'] },
-  { id: 'workflow', label: 'مسارات العمل', icon: Settings, subItems: ['صندوق المهام', 'جميع مسارات العمل'] },
-  { id: 'settings', label: 'إعدادات النظام', icon: Settings, subItems: ['إعدادات المؤسسة', 'الضرائب', 'المستخدمين والصلاحيات'] },
+  { id: 'sales', label: 'المبيعات', icon: ShoppingCart, subItems: ['العمليات'] },
+  { id: 'purchases', label: 'المشتريات', icon: Package, subItems: ['العمليات'] },
+  { id: 'inventory', label: 'المخازن', icon: LayoutDashboard, subItems: ['المستودعات'] },
+  { id: 'accounting', label: 'المحاسبة', icon: Calculator, subItems: ['التقارير المالية'] },
+  { id: 'settings', label: 'الإعدادات', icon: Settings, subItems: ['الإعدادات العامة'] },
 ];
 
 const Sidebar: React.FC<{ onNavigate?: (module: string, tab?: string) => void }> = ({ onNavigate }) => {
