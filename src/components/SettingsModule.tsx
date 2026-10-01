@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, MapPin, Users, Shield, Save, Key, Database, RefreshCw, Calendar, DollarSign, CheckCircle } from 'lucide-react';
 import { getSettings, updateSettings, type SettingsData } from '../lib/firestoreUtils';
+import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إعدادات المنشأة والفروع' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -15,7 +17,11 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
   });
   const [settingsId, setSettingsId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  // Permissions State
+  const [roles, setRoles] = useState<any[]>([]);
+  const [selectedRoleIdx, setSelectedRoleIdx] = useState(0);
+  const [isSavingPermissions, setIsSavingPermissions] = useState(false);
+  const [permissionsSaveSuccess, setPermissionsSaveSuccess] = useState(false);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -26,6 +32,27 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
       }
     };
     fetchSettings();
+  }, []);
+
+  useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'permissions'));
+        if (querySnapshot.empty) {
+          const defaultRoles = [
+            { id: 'admin', name: 'مدير عام', isAbsolute: true, permissions: [] },
+            { id: 'cashier_ruh', name: 'كاشير الرياض', isAbsolute: false, permissions: [] },
+            { id: 'store_qassim', name: 'مسؤول مستودع القصيم', isAbsolute: false, permissions: [] }
+          ];
+          setRoles(defaultRoles);
+        } else {
+          setRoles(querySnapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+        }
+      } catch (error) {
+        console.error("Error fetching permissions:", error);
+      }
+    };
+    fetchPermissions();
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,6 +75,42 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleSavePermissions = async () => {
+    setIsSavingPermissions(true);
+    setPermissionsSaveSuccess(false);
+    try {
+      const roleToSave = roles[selectedRoleIdx];
+      if (roleToSave) {
+        const docRef = doc(db, 'permissions', roleToSave.id || roleToSave.name);
+        await setDoc(docRef, roleToSave, { merge: true });
+        setPermissionsSaveSuccess(true);
+        setTimeout(() => setPermissionsSaveSuccess(false), 3000);
+      }
+    } catch (error) {
+      console.error("Error saving permissions:", error);
+    } finally {
+      setIsSavingPermissions(false);
+    }
+  };
+
+  const handlePermissionToggle = (moduleName: string, action: string) => {
+    setRoles(prev => {
+      const newRoles = [...prev];
+      const role = { ...newRoles[selectedRoleIdx] };
+      if (!role.permissions) role.permissions = [];
+      const permIdx = role.permissions.findIndex((p: any) => p.name === moduleName);
+      if (permIdx >= 0) {
+        role.permissions[permIdx] = { ...role.permissions[permIdx], [action]: !role.permissions[permIdx][action] };
+      } else {
+        const newPerm = { name: moduleName, v: false, c: false, e: false, d: false };
+        (newPerm as any)[action] = true;
+        role.permissions.push(newPerm);
+      }
+      newRoles[selectedRoleIdx] = role;
+      return newRoles;
+    });
   };
 
   const tabs = ['إعدادات المنشأة والفروع', 'الصلاحيات والأمان', 'النسخ الاحتياطي والأرشفة'];
@@ -189,21 +252,32 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
                 </button>
               </div>
               <div className="space-y-2 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
-                {['مدير النظام', 'محاسب عام', 'كاشير الفرع الرئيسي', 'أمين المستودع'].map((user, idx) => (
-                  <button key={idx} className={`w-full text-right p-4 rounded-xl border transition-all ${idx === 0 ? 'border-orange-400 bg-orange-50 shadow-sm' : 'border-slate-100 bg-slate-50 hover:border-orange-200'}`}>
-                    <div className="font-bold text-slate-800">{user}</div>
-                    <div className="text-xs text-slate-500 mt-1">{idx === 0 ? 'صلاحيات مطلقة' : 'مخصص'}</div>
+                {roles.map((role, idx) => (
+                  <button key={idx} onClick={() => setSelectedRoleIdx(idx)} className={`w-full text-right p-4 rounded-xl border transition-all ${selectedRoleIdx === idx ? 'border-orange-400 bg-orange-50 shadow-sm' : 'border-slate-100 bg-slate-50 hover:border-orange-200'}`}>
+                    <div className="font-bold text-slate-800">{role.name}</div>
+                    <div className="text-xs text-slate-500 mt-1">{role.isAbsolute ? 'صلاحيات مطلقة' : 'مخصص'}</div>
                   </button>
                 ))}
               </div>
             </div>
 
             <div className="col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                  <Key size={24} />
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                    <Key size={24} />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-800">مصفوفة الصلاحيات لـ {roles[selectedRoleIdx]?.name}</h3>
                 </div>
-                <h3 className="text-xl font-bold text-slate-800">مصفوفة الصلاحيات (Permission Matrix)</h3>
+                <div className="flex items-center gap-2">
+                  {permissionsSaveSuccess && (
+                    <span className="text-emerald-600 font-bold text-sm bg-emerald-50 px-3 py-1 rounded-lg">تم الحفظ بنجاح</span>
+                  )}
+                  <button onClick={handleSavePermissions} disabled={isSavingPermissions} className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2">
+                    {isSavingPermissions ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Save size={16} />}
+                    حفظ الصلاحيات
+                  </button>
+                </div>
               </div>
               
               <div className="overflow-x-auto">
@@ -219,20 +293,25 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
                   </thead>
                   <tbody>
                     {[
-                      { name: 'فاتورة المبيعات', v: true, c: true, e: false, d: false },
-                      { name: 'سندات القبض والصرف', v: true, c: true, e: true, d: false },
-                      { name: 'بطاقات الأصناف', v: true, c: false, e: false, d: false },
-                      { name: 'القيود المحاسبية', v: true, c: false, e: false, d: false },
-                      { name: 'إعدادات المنشأة', v: false, c: false, e: false, d: false },
-                    ].map((mod, idx) => (
-                      <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                        <td className="p-3 font-medium text-slate-800">{mod.name}</td>
-                        <td className="p-3 text-center"><input type="checkbox" defaultChecked={mod.v} className="w-5 h-5 accent-indigo-600 rounded" /></td>
-                        <td className="p-3 text-center"><input type="checkbox" defaultChecked={mod.c} className="w-5 h-5 accent-indigo-600 rounded" /></td>
-                        <td className="p-3 text-center"><input type="checkbox" defaultChecked={mod.e} className="w-5 h-5 accent-indigo-600 rounded" /></td>
-                        <td className="p-3 text-center"><input type="checkbox" defaultChecked={mod.d} className="w-5 h-5 accent-rose-600 rounded" /></td>
-                      </tr>
-                    ))}
+                      'فاتورة المبيعات',
+                      'سندات القبض والصرف',
+                      'بطاقات الأصناف',
+                      'القيود المحاسبية',
+                      'إعدادات المنشأة',
+                    ].map((modName, idx) => {
+                      const currentRole = roles[selectedRoleIdx];
+                      const isAbs = currentRole?.isAbsolute;
+                      const perm = currentRole?.permissions?.find((p: any) => p.name === modName) || { v: false, c: false, e: false, d: false };
+                      return (
+                        <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                          <td className="p-3 font-medium text-slate-800">{modName}</td>
+                          <td className="p-3 text-center"><input type="checkbox" checked={isAbs || perm.v} onChange={() => handlePermissionToggle(modName, 'v')} disabled={isAbs} className="w-5 h-5 accent-indigo-600 rounded cursor-pointer" /></td>
+                          <td className="p-3 text-center"><input type="checkbox" checked={isAbs || perm.c} onChange={() => handlePermissionToggle(modName, 'c')} disabled={isAbs} className="w-5 h-5 accent-indigo-600 rounded cursor-pointer" /></td>
+                          <td className="p-3 text-center"><input type="checkbox" checked={isAbs || perm.e} onChange={() => handlePermissionToggle(modName, 'e')} disabled={isAbs} className="w-5 h-5 accent-indigo-600 rounded cursor-pointer" /></td>
+                          <td className="p-3 text-center"><input type="checkbox" checked={isAbs || perm.d} onChange={() => handlePermissionToggle(modName, 'd')} disabled={isAbs} className="w-5 h-5 accent-rose-600 rounded cursor-pointer" /></td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
