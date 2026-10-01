@@ -15,18 +15,6 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
-const getSettings = async () => {
-  try {
-    const docRef = doc(db, 'settings', 'general');
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      return { success: true, data: docSnap.data() };
-    }
-    return { success: true, data: { companyNameAr: 'مشاتل غصن يميس' } };
-  } catch (error) {
-    return { success: false, error };
-  }
-};
 
 const navItems = [
   { id: 'sales', label: 'المبيعات', icon: ShoppingCart, subItems: ['العمليات', 'نقطة البيع السريع (POS)', 'مرتجع المبيعات', 'عروض الأسعار'] },
@@ -44,9 +32,14 @@ const Sidebar: React.FC<{ onNavigate?: (module: string, tab?: string) => void }>
 
   useEffect(() => {
     const fetchSettings = async () => {
-      const res = await getSettings();
-      if (res.success && res.data && res.data.companyNameAr) {
-        setCompanyName(res.data.companyNameAr);
+      try {
+        const docRef = doc(db, 'settings', 'profile');
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists() && docSnap.data().companyNameAr) {
+          setCompanyName(docSnap.data().companyNameAr);
+        }
+      } catch (error) {
+        console.error("Failed to fetch settings", error);
       }
     };
     fetchSettings();
