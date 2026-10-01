@@ -461,11 +461,17 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
                   <select value={item.productId} onChange={e => {
                     const newItems = [...invoiceForm.items];
                     newItems[idx].productId = e.target.value;
+                    const prod = products.find(p => p.id === e.target.value);
+                    if (prod) {
+                      newItems[idx].price = prod.salePrice || 0;
+                    }
                     setInvoiceForm({...invoiceForm, items: newItems});
                   }} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50">
                     <option value="">اختر المنتج...</option>
-                    <option value="PROD_1">شتلة ليمون حساوي (المخزون: 150)</option>
-                    <option value="PROD_2">سماد عضوي (المخزون: 0)</option>
+                    {products.map(p => {
+                      const stock = p.branches && invoiceForm.branchId && p.branches[invoiceForm.branchId] !== undefined ? p.branches[invoiceForm.branchId] : (p.quantity || 0);
+                      return <option key={p.id} value={p.id}>{p.name} (المخزون: {stock})</option>;
+                    })}
                   </select>
                 </div>
                 <div className="w-24">
@@ -473,14 +479,14 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
                     const newItems = [...invoiceForm.items];
                     newItems[idx].qty = Number(e.target.value);
                     setInvoiceForm({...invoiceForm, items: newItems});
-                  }} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" />
+                  }} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" min="1" />
                 </div>
                 <div className="w-32">
                   <input type="number" placeholder="السعر الإفرادي" value={item.price} onChange={e => {
                     const newItems = [...invoiceForm.items];
                     newItems[idx].price = Number(e.target.value);
                     setInvoiceForm({...invoiceForm, items: newItems});
-                  }} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" />
+                  }} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" min="0" />
                 </div>
               </div>
             ))}

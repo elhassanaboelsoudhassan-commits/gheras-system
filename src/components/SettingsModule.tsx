@@ -58,6 +58,7 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
     setSuccessMsg('');
     try {
       if (!companyForm.name) throw new Error("اسم المؤسسة مطلوب");
+      if (companyForm.taxNumber && companyForm.taxNumber.length !== 15) throw new Error("الرقم الضريبي يجب أن يكون 15 رقماً.");
       
       const docRef = doc(db, 'settings', 'company_profile');
       await setDoc(docRef, {
