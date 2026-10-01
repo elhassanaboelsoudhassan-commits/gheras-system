@@ -4,6 +4,7 @@ import { getJournalEntries, type JournalEntry, computeTrialBalance, type ChartOf
 
 const AccountingModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'لوحة التقارير المركزية' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [activeModal, setActiveModal] = useState<string | null>(null);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [accounts, setAccounts] = useState<ChartOfAccount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -142,7 +143,7 @@ const AccountingModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ل�
                   { title: 'تقارير رواتب الموظفين', desc: 'مسيرات الرواتب والسلف المعتمدة', icon: <FileSpreadsheet size={28} /> },
                   { title: 'قائمة المركز المالي', desc: 'الميزانية العمومية للمنشأة', icon: <PieChart size={28} /> },
                 ].map((report, idx) => (
-                  <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-emerald-500 hover:shadow-lg transition-all cursor-pointer group flex items-start gap-4">
+                  <div key={idx} onClick={() => setActiveModal(report.title)} className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-emerald-500 hover:shadow-lg transition-all cursor-pointer group flex items-start gap-4">
                     <div className="p-4 bg-slate-50 text-slate-400 rounded-xl group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors">
                       {report.icon}
                     </div>
@@ -253,7 +254,7 @@ const AccountingModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ل�
                   <Calculator className="text-emerald-600" />
                   ميزان المراجعة (Trial Balance)
                 </h3>
-                <button className="px-4 py-2 bg-emerald-100 text-emerald-700 font-bold rounded-lg hover:bg-emerald-200 transition-colors flex items-center gap-2 text-sm">
+                <button onClick={() => setActiveModal('تصدير ميزان المراجعة PDF')} className="px-4 py-2 bg-emerald-100 text-emerald-700 font-bold rounded-lg hover:bg-emerald-200 transition-colors flex items-center gap-2 text-sm">
                   <Download size={16} /> تصدير PDF
                 </button>
               </div>
@@ -304,6 +305,31 @@ const AccountingModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ل�
             </div>
           )}
         </>
+      )}
+
+      {activeModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in-up">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h2 className="text-xl font-bold text-slate-800">{activeModal}</h2>
+              <button onClick={() => setActiveModal(null)} className="text-slate-400 hover:text-rose-500 transition-colors">
+                <Calculator size={24} />
+              </button>
+            </div>
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <PieChart size={32} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-700 mb-2">جاري تجهيز الشاشة</h3>
+              <p className="text-slate-500">سيتم تفعيل نافذة "{activeModal}" للعمل بالكامل في التحديث القادم.</p>
+            </div>
+            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-center">
+              <button onClick={() => setActiveModal(null)} className="px-8 py-2.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors w-full">
+                حسناً، إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

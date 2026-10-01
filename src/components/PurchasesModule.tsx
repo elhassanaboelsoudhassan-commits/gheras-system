@@ -3,6 +3,7 @@ import { ShoppingBag, Truck, ClipboardList, RotateCcw, Building, Plus, FilePlus,
 
 const PurchasesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'فاتورة المشتريات' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [activeModal, setActiveModal] = useState<string | null>(null);
 
   const tabs = ['فاتورة المشتريات', 'دورة المشتريات', 'بطاقة المورد'];
 
@@ -173,13 +174,13 @@ const PurchasesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'فا
       {activeTab === 'دورة المشتريات' && (
         <div className="space-y-6">
           <div className="flex gap-4">
-            <button className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition-colors flex items-center gap-2">
+            <button onClick={() => setActiveModal('طلب شراء داخلي')} className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition-colors flex items-center gap-2">
               <FilePlus size={18} /> طلب شراء داخلي (Request)
             </button>
-            <button className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2">
+            <button onClick={() => setActiveModal('أمر شراء لمورد')} className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2">
               <Truck size={18} /> أمر شراء لمورد (Order)
             </button>
-            <button className="px-6 py-3 bg-rose-600 text-white font-bold rounded-xl shadow-md hover:bg-rose-700 transition-colors flex items-center gap-2">
+            <button onClick={() => setActiveModal('مرتجع مشتريات')} className="px-6 py-3 bg-rose-600 text-white font-bold rounded-xl shadow-md hover:bg-rose-700 transition-colors flex items-center gap-2">
               <RotateCcw size={18} /> مرتجع مشتريات
             </button>
           </div>
@@ -263,6 +264,31 @@ const PurchasesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'فا
                 <label className="block text-sm font-bold text-slate-700 mb-1">بيانات التواصل</label>
                 <input type="text" className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500" placeholder="اسم المندوب - رقم الجوال" />
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in-up">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h2 className="text-xl font-bold text-slate-800">{activeModal}</h2>
+              <button onClick={() => setActiveModal(null)} className="text-slate-400 hover:text-rose-500 transition-colors">
+                <AlertCircle size={24} />
+              </button>
+            </div>
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FilePlus size={32} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-700 mb-2">جاري تجهيز الشاشة</h3>
+              <p className="text-slate-500">سيتم تفعيل نافذة "{activeModal}" للعمل بالكامل في التحديث القادم.</p>
+            </div>
+            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-center">
+              <button onClick={() => setActiveModal(null)} className="px-8 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors w-full">
+                حسناً، إغلاق
+              </button>
             </div>
           </div>
         </div>

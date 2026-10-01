@@ -14,6 +14,7 @@ import {
 
 const HRModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ملفات الموظفين' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [activeModal, setActiveModal] = useState<string | null>(null);
   
   // Employees State
   const [employees, setEmployees] = useState<(EmployeeData & { id: string })[]>([]);
@@ -309,7 +310,7 @@ const HRModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ملفات 
             <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2"><Clock className="text-emerald-600"/> سجل الحضور والانصراف</h3>
             <div className="flex gap-4 items-center">
               <input type="date" className="p-2 border border-slate-200 rounded-lg outline-none focus:border-emerald-500 text-sm" />
-              <button className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg hover:bg-slate-200 transition-colors text-sm">
+              <button onClick={() => setActiveModal('استيراد من البصمة')} className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg hover:bg-slate-200 transition-colors text-sm">
                 استيراد من البصمة
               </button>
             </div>
@@ -471,6 +472,31 @@ const HRModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ملفات 
               <p className="text-slate-400">انقر على "إنشاء المسودة" لاحتساب الرواتب لهذا الشهر.</p>
             </div>
           )}
+        </div>
+      )}
+
+      {activeModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in-up">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h2 className="text-xl font-bold text-slate-800">{activeModal}</h2>
+              <button onClick={() => setActiveModal(null)} className="text-slate-400 hover:text-rose-500 transition-colors">
+                <CheckCircle size={24} />
+              </button>
+            </div>
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock size={32} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-700 mb-2">جاري تجهيز الشاشة</h3>
+              <p className="text-slate-500">سيتم تفعيل نافذة "{activeModal}" للعمل بالكامل في التحديث القادم.</p>
+            </div>
+            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-center">
+              <button onClick={() => setActiveModal(null)} className="px-8 py-2.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors w-full">
+                حسناً، إغلاق
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

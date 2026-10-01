@@ -4,6 +4,7 @@ import { addItem, getItems, type ItemData } from '../lib/firestoreUtils';
 
 const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'بطاقة الصنف الشاملة' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [activeModal, setActiveModal] = useState<string | null>(null);
   
   // Items List State
   const [items, setItems] = useState<(ItemData & { id: string })[]>([]);
@@ -311,11 +312,11 @@ const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'بط
       {activeTab === 'الحركات المخزنية' && (
         <div className="space-y-6">
           <div className="flex gap-4">
-            <button className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition-colors flex items-center gap-2">
+            <button onClick={() => setActiveModal('أمر تحويل بين مستودعين')} className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition-colors flex items-center gap-2">
               <ArrowRightLeft size={18} />
               أمر تحويل بين مستودعين
             </button>
-            <button className="px-6 py-3 bg-rose-600 text-white font-bold rounded-xl shadow-md hover:bg-rose-700 transition-colors flex items-center gap-2">
+            <button onClick={() => setActiveModal('تسوية عجز / زيادة')} className="px-6 py-3 bg-rose-600 text-white font-bold rounded-xl shadow-md hover:bg-rose-700 transition-colors flex items-center gap-2">
               <TrendingDown size={18} />
               تسوية عجز / زيادة
             </button>
@@ -348,7 +349,7 @@ const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'بط
                   <td className="p-4 text-slate-700">المستودع الرئيسي</td>
                   <td className="p-4 text-slate-700">فرع جدة</td>
                   <td className="p-4"><span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold">بضاعة بالطريق</span></td>
-                  <td className="p-4"><button className="text-emerald-600 font-bold hover:underline">تأكيد الاستلام</button></td>
+                  <td className="p-4"><button onClick={() => setActiveModal('تأكيد الاستلام')} className="text-emerald-600 font-bold hover:underline">تأكيد الاستلام</button></td>
                 </tr>
                 <tr className="border-b border-slate-100 hover:bg-slate-50">
                   <td className="p-4 font-mono font-medium text-slate-800">ADJ-2023-0042</td>
@@ -357,7 +358,7 @@ const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'بط
                   <td className="p-4 text-slate-700">فرع جدة</td>
                   <td className="p-4 text-slate-400">-</td>
                   <td className="p-4"><span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold">تم القيد</span></td>
-                  <td className="p-4"><button className="text-slate-500 font-bold hover:underline">عرض</button></td>
+                  <td className="p-4"><button onClick={() => setActiveModal('عرض المستند')} className="text-slate-500 font-bold hover:underline">عرض</button></td>
                 </tr>
               </tbody>
             </table>
@@ -372,7 +373,7 @@ const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'بط
               <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2"><Layers className="text-emerald-600"/> إدخال بضاعة أول المدة (رأس المال العيني)</h3>
               <p className="text-sm text-slate-500 mt-1">يستخدم هذا السند لمرة واحدة عند بدء استخدام النظام لإدخال الأرصدة الافتتاحية للمخازن.</p>
             </div>
-            <button className="px-4 py-2 bg-emerald-100 text-emerald-700 font-bold rounded-lg hover:bg-emerald-200 transition-colors">
+            <button onClick={() => setActiveModal('حفظ الأرصدة الافتتاحية')} className="px-4 py-2 bg-emerald-100 text-emerald-700 font-bold rounded-lg hover:bg-emerald-200 transition-colors">
               حفظ الأرصدة الافتتاحية
             </button>
           </div>
@@ -438,11 +439,11 @@ const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'بط
               <p className="text-sm text-slate-500 mt-1">استخرج قائمة الجرد الدفترية وقارنها بالكميات الفعلية في المستودع.</p>
             </div>
             <div className="flex gap-3">
-              <button className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg hover:bg-slate-200 transition-colors flex items-center gap-2">
+              <button onClick={() => setActiveModal('استيراد من Excel')} className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-lg hover:bg-slate-200 transition-colors flex items-center gap-2">
                 <FileSpreadsheet size={18} />
                 استيراد من Excel
               </button>
-              <button className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors">
+              <button onClick={() => setActiveModal('بدء جرد لمستودع')} className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors">
                 بدء جرد لمستودع
               </button>
             </div>
@@ -452,6 +453,31 @@ const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'بط
             <ClipboardList size={64} className="text-slate-300 mb-4" />
             <h4 className="text-xl font-bold text-slate-600 mb-2">لا توجد عمليات جرد مفتوحة</h4>
             <p className="text-slate-400">انقر على "بدء جرد لمستودع" لتجميد أرصدة المستودع والبدء في إدخال الكميات الفعلية.</p>
+          </div>
+        </div>
+      )}
+
+      {activeModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in-up">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h2 className="text-xl font-bold text-slate-800">{activeModal}</h2>
+              <button onClick={() => setActiveModal(null)} className="text-slate-400 hover:text-rose-500 transition-colors">
+                <CheckCircle size={24} />
+              </button>
+            </div>
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Package size={32} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-700 mb-2">جاري تجهيز الشاشة</h3>
+              <p className="text-slate-500">سيتم تفعيل نافذة "{activeModal}" للعمل بالكامل في التحديث القادم.</p>
+            </div>
+            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-center">
+              <button onClick={() => setActiveModal(null)} className="px-8 py-2.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors w-full">
+                حسناً، إغلاق
+              </button>
+            </div>
           </div>
         </div>
       )}
