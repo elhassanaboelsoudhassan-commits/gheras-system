@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Package, ArrowRightLeft, ClipboardList, TrendingDown, Layers, Barcode, Save, FileSpreadsheet, PlusCircle, CheckCircle, Search } from 'lucide-react';
-import { addItem, getItems, ItemData } from '../lib/firestoreUtils';
+import { addItem, getItems, type ItemData } from '../lib/firestoreUtils';
 
 const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'بطاقة الصنف الشاملة' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);

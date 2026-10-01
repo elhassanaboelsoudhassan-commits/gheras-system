@@ -3,13 +3,13 @@ import { Users, Clock, Wallet, FileBarChart, UserPlus, Save, Search, FileText, C
 import { 
   addEmployee, 
   getEmployees, 
-  EmployeeData, 
+  type EmployeeData, 
   processCustody, 
   getCustodies, 
-  CustodyData,
+  type CustodyData,
   processPayroll,
-  PayrollData,
-  PayrollEntry
+  type PayrollData,
+  type PayrollEntry
 } from '../lib/firestoreUtils';
 
 const HRModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ملفات الموظفين' }) => {

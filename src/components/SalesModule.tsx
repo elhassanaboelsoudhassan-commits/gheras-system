@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, FileText, FileSignature, ArrowRightLeft, Search, Plus, Minus, X, CheckCircle, PauseCircle, LogOut, Printer, QrCode, ShieldCheck, Package, Save } from 'lucide-react';
-import { getItems, processSale, ItemData, SaleItem } from '../lib/firestoreUtils';
+import { getItems, processSale, type ItemData, type SaleItem } from '../lib/firestoreUtils';
 
 const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة البيع السريع (POS)' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, FileText, PieChart, TrendingUp, BarChart3, Calculator, Download, Search, Layers, FileSpreadsheet } from 'lucide-react';
-import { getJournalEntries, JournalEntry, computeTrialBalance, ChartOfAccount } from '../lib/firestoreUtils';
+import { getJournalEntries, type JournalEntry, computeTrialBalance, type ChartOfAccount } from '../lib/firestoreUtils';
 
 const AccountingModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'لوحة التقارير المركزية' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
