@@ -1,18 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import './index.css';
 
-// 1. المكون المحمي (ProtectedRoute) لمنع التوجيه العشوائي
 const ProtectedRoute = ({ children, isAuthenticated }: { children: JSX.Element, isAuthenticated: boolean }) => {
-  return isAuthenticated ? children : <Navigate to="/" replace />;
+  const location = useLocation();
+  if (!isAuthenticated && location.pathname !== '/') {
+    return <Navigate to="/" replace />;
+  }
+  return children;
 };
 
 const PublicRoute = ({ children, isAuthenticated }: { children: JSX.Element, isAuthenticated: boolean }) => {
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
+  const location = useLocation();
+  if (isAuthenticated && location.pathname !== '/dashboard') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
 };
 
 function App() {
@@ -21,8 +28,11 @@ function App() {
   });
   const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
 
-  // نسف الوميض وإلغاء دالة الانتظار تماماً مع مصفوفة تبعية فارغة
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsAuthChecking(false);
+    }, 1000);
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user && user.email === 'elhassanelsoudy@gmail.com') {
         localStorage.setItem('gheras_admin', JSON.stringify({ role: 'admin', email: user.email }));
@@ -32,14 +42,17 @@ function App() {
         setIsAuthenticated(false);
       }
       setIsAuthChecking(false);
+      clearTimeout(timer);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      clearTimeout(timer);
+    };
   }, []);
 
   if (isAuthChecking && !isAuthenticated) {
-    // Return a minimal fallback or just let it render PublicRoute immediately 
-    // to show the luxury glass login instead of a white screen
+    // Show glass login immediately instead of a blank screen while checking
   }
 
   return (
