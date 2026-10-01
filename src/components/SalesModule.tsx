@@ -16,6 +16,11 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
     fetchItems();
   }, []);
 
+  useEffect(() => {
+    // Guarantee stability and unblock interactive elements
+    window.dispatchEvent(new Event('resize'));
+  }, []);
+
   const fetchItems = async () => {
     const result = await getItems();
     if (result.success && result.data) {
