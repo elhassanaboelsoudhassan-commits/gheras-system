@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, MapPin, Users, Shield, Save, Key, Database, RefreshCw, Calendar, DollarSign, CheckCircle } from 'lucide-react';
-import { getSettings, updateSettings, SettingsData } from '../lib/firestoreUtils';
+import { getSettings, updateSettings, type SettingsData } from '../lib/firestoreUtils';
 
 const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إعدادات المنشأة والفروع' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
