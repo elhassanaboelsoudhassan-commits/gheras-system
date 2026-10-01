@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, runTransaction } from 'firebase/firestore';
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, runTransaction, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 export interface ItemData {
@@ -55,11 +55,10 @@ export interface SettingsData {
 
 export const getSettings = async () => {
   try {
-    // We assume there's only one settings document with a specific ID, e.g., 'main_settings'
-    const querySnapshot = await getDocs(collection(db, 'settings'));
-    if (!querySnapshot.empty) {
-      const doc = querySnapshot.docs[0];
-      return { success: true, id: doc.id, data: doc.data() as SettingsData };
+    const docRef = doc(db, 'settings', 'profile');
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { success: true, id: docSnap.id, data: docSnap.data() as SettingsData };
     }
     return { success: true, data: null };
   } catch (error) {
@@ -70,14 +69,9 @@ export const getSettings = async () => {
 
 export const updateSettings = async (id: string | null, settingsData: SettingsData) => {
   try {
-    if (id) {
-      const docRef = doc(db, 'settings', id);
-      await updateDoc(docRef, { ...settingsData });
-      return { success: true, id };
-    } else {
-      const docRef = await addDoc(collection(db, 'settings'), settingsData);
-      return { success: true, id: docRef.id };
-    }
+    const docRef = doc(db, 'settings', 'profile');
+    await setDoc(docRef, { ...settingsData }, { merge: true });
+    return { success: true, id: 'profile' };
   } catch (error) {
     console.error("Error updating settings: ", error);
     return { success: false, error };

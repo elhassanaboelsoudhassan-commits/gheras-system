@@ -111,9 +111,9 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
                 </div>
               )}
 
-              <button onClick={handleSaveSettings} disabled={isSaving} className="w-full py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2 disabled:opacity-70">
-                {isSaving ? <div className="w-5 h-5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div> : <Save size={20} />}
-                {isSaving ? 'جاري الحفظ...' : 'حفظ بيانات المؤسسة'}
+              <button onClick={handleSaveSettings} disabled={isSaving} className={`w-full py-3 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-70 ${saveSuccess ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
+                {isSaving ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : saveSuccess ? <CheckCircle size={20} /> : <Save size={20} />}
+                {isSaving ? 'جاري الحفظ...' : saveSuccess ? 'تم الحفظ بنجاح' : 'حفظ بيانات المؤسسة'}
               </button>
             </div>
           </div>
