@@ -24,7 +24,14 @@ const PublicRoute = ({ children, isAuthenticated }: { children: JSX.Element, isA
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return !!localStorage.getItem('gheras_admin');
+    const stored = localStorage.getItem('gheras_admin');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed.email === 'elhassanelsoudy@gmail.com') return true;
+      } catch (e) {}
+    }
+    return false;
   });
   const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
 

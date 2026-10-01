@@ -7,6 +7,7 @@ import InventoryModule from './InventoryModule';
 import SettingsModule from './SettingsModule';
 import HRModule from './HRModule';
 import AccountingModule from './AccountingModule';
+import ErrorBoundary from '../ErrorBoundary';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -36,37 +37,39 @@ const Dashboard: React.FC = () => {
         {/* Workspace */}
         {/* Workspace */}
         <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50">
-          {activeView.module === 'overview' ? (
-            <div className="p-8">
-              <div className="mb-8">
-                <h3 className="text-2xl font-bold text-slate-800 mb-2">لوحة التقارير المركزية</h3>
-                <p className="text-slate-500">نظرة شاملة لجميع تقارير المنشأة المتاحة.</p>
-              </div>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-                  <h4 className="text-xl font-bold text-slate-800 mb-4">أهلاً بك في غِراس</h4>
-                  <p className="text-slate-500">منظومة غِراس في وضع التأسيس الجديد. يمكنك البدء بإضافة الوحدات خطوة بخطوة.</p>
+          <ErrorBoundary>
+            {activeView.module === 'overview' ? (
+              <div className="p-8">
+                <div className="mb-8">
+                  <h3 className="text-2xl font-bold text-slate-800 mb-2">لوحة التقارير المركزية</h3>
+                  <p className="text-slate-500">نظرة شاملة لجميع تقارير المنشأة المتاحة.</p>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <h4 className="text-xl font-bold text-slate-800 mb-4">أهلاً بك في غِراس</h4>
+                    <p className="text-slate-500">منظومة غِراس في وضع التأسيس الجديد. يمكنك البدء بإضافة الوحدات خطوة بخطوة.</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : activeView.module === 'sales' ? (
-            <SalesModule initialTab={activeView.tab} />
-          ) : activeView.module === 'purchases' ? (
-            <PurchasesModule initialTab={activeView.tab} />
-          ) : activeView.module === 'inventory' ? (
-            <InventoryModule initialTab={activeView.tab} />
-          ) : activeView.module === 'accounting' ? (
-            <AccountingModule initialTab={activeView.tab} />
-          ) : activeView.module === 'settings' ? (
-            <SettingsModule initialTab={activeView.tab} />
-          ) : activeView.module === 'hr' ? (
-            <HRModule initialTab={activeView.tab} />
-          ) : (
-            <div className="flex items-center justify-center h-full text-slate-400 text-lg">
-              هذا الموديول ({activeView.module}) قيد التطوير...
-            </div>
-          )}
+            ) : activeView.module === 'sales' ? (
+              <SalesModule initialTab={activeView.tab} />
+            ) : activeView.module === 'purchases' ? (
+              <PurchasesModule initialTab={activeView.tab} />
+            ) : activeView.module === 'inventory' ? (
+              <InventoryModule initialTab={activeView.tab} />
+            ) : activeView.module === 'accounting' ? (
+              <AccountingModule initialTab={activeView.tab} />
+            ) : activeView.module === 'settings' ? (
+              <SettingsModule initialTab={activeView.tab} />
+            ) : activeView.module === 'hr' ? (
+              <HRModule initialTab={activeView.tab} />
+            ) : (
+              <div className="flex items-center justify-center h-full text-slate-400 text-lg">
+                هذا الموديول ({activeView.module}) قيد التطوير...
+              </div>
+            )}
+          </ErrorBoundary>
         </div>
       </main>
     </div>
