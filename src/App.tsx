@@ -34,8 +34,22 @@ function App() {
     }, 1000);
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      const stored = localStorage.getItem('gheras_admin');
+      let isBypass = false;
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed.email === 'elhassanelsoudy@gmail.com') {
+            isBypass = true;
+          }
+        } catch (e) {}
+      }
+
       if (user && user.email === 'elhassanelsoudy@gmail.com') {
         localStorage.setItem('gheras_admin', JSON.stringify({ role: 'admin', email: user.email }));
+        setIsAuthenticated(true);
+      } else if (isBypass) {
+        // Keep the local admin bypass active without wiping it
         setIsAuthenticated(true);
       } else {
         localStorage.removeItem('gheras_admin');
