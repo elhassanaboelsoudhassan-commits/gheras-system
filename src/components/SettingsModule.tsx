@@ -17,6 +17,7 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
   });
   const [settingsId, setSettingsId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   // Permissions State
   const [roles, setRoles] = useState<any[]>([]);
   const [selectedRoleIdx, setSelectedRoleIdx] = useState(0);
