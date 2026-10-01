@@ -4,12 +4,13 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDummyKeyForGherasAppXYZ",
-  authDomain: "gheras-erp.firebaseapp.com",
-  projectId: "gheras-erp",
-  storageBucket: "gheras-erp.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abcdef123456"
+  apiKey: "AIzaSyDbqSpVNRb0n4-fqKh2ZklLSP8-cB_9JZ4",
+  authDomain: "gheras-system.firebaseapp.com",
+  projectId: "gheras-system",
+  storageBucket: "gheras-system.firebasestorage.app",
+  messagingSenderId: "839683765479",
+  appId: "1:839683765479:web:6847ed6b4d939a13555e42",
+  measurementId: "G-MXDS770P1Q"
 };
 
 // Initialize Firebase
