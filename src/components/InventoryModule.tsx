@@ -13,7 +13,10 @@ const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ال
   
   const [modals, setModals] = useState({ branch: false, product: false });
   const [branchForm, setBranchForm] = useState({ name: '', location: '', manager: '' });
-  const [productForm, setProductForm] = useState({ name: '', category: '', price: 0, cost: 0, quantity: 0, branchId: '' });
+  const [productForm, setProductForm] = useState({ name: '', barcode: '', category: '', price: 0, cost: 0, quantity: 0, branchId: '' });
+
+  const user = JSON.parse(localStorage.getItem('gheras_admin') || '{}');
+  const isAdmin = user.email === 'elhassanelsoudy@gmail.com';
 
   const fetchData = async () => {
     setLoading(true);
@@ -66,15 +69,18 @@ const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ال
 
       await addDoc(collection(db, 'products'), {
         name: productForm.name,
+        barcode: productForm.barcode,
         category: productForm.category,
         price: productForm.price,
+        vat: productForm.price * 0.15,
+        priceWithVat: productForm.price * 1.15,
         weightedAverageCost: productForm.cost,
         quantity: productForm.quantity,
         branches: initialBranches,
         createdAt: serverTimestamp()
       });
       setModals({ ...modals, product: false });
-      setProductForm({ name: '', category: '', price: 0, cost: 0, quantity: 0, branchId: '' });
+      setProductForm({ name: '', barcode: '', category: '', price: 0, cost: 0, quantity: 0, branchId: '' });
       fetchData();
     } catch (e: any) {
       setErrorMsg(e.message);
@@ -132,21 +138,23 @@ const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ال
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden animate-fade-in">
           <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-to-l from-emerald-50/50 to-white">
             <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">📦 أصناف المنتجات</h3>
-            <button onClick={() => setModals({ ...modals, product: true })} className="bg-emerald-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-md hover:bg-emerald-700 hover:shadow-lg transition-all flex items-center gap-2">
-              <Plus size={18} /> إضافة صنف جديد
-            </button>
+            {isAdmin && (
+              <button onClick={() => setModals({ ...modals, product: true })} className="bg-emerald-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-md hover:bg-emerald-700 hover:shadow-lg transition-all flex items-center gap-2">
+                <Plus size={18} /> إضافة صنف جديد
+              </button>
+            )}
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-right text-sm text-slate-600">
               <thead className="text-xs text-slate-500 uppercase bg-slate-100 border-b border-slate-200">
-                <tr><th className="px-6 py-4 font-bold">اسم الصنف</th><th className="px-6 py-4 font-bold">التصنيف</th><th className="px-6 py-4 font-bold">سعر البيع</th><th className="px-6 py-4 font-bold">إجمالي الرصيد</th></tr>
+                <tr><th className="px-6 py-4 font-bold">اسم الصنف (الباركود)</th><th className="px-6 py-4 font-bold">التصنيف</th><th className="px-6 py-4 font-bold">سعر البيع (شامل 15%)</th><th className="px-6 py-4 font-bold">إجمالي الرصيد</th></tr>
               </thead>
               <tbody>
                 {products.map((p, i) => (
                   <tr key={i} className="border-b border-slate-50 hover:bg-emerald-50/30 transition-colors">
-                    <td className="px-6 py-4 font-medium text-slate-800">{p.name}</td>
+                    <td className="px-6 py-4 font-medium text-slate-800">{p.name} <span className="text-xs text-slate-400 block">{p.barcode}</span></td>
                     <td className="px-6 py-4">{p.category}</td>
-                    <td className="px-6 py-4 font-bold text-emerald-600">{p.price} ر.س</td>
+                    <td className="px-6 py-4 font-bold text-emerald-600">{p.priceWithVat ? p.priceWithVat.toFixed(2) : p.price} ر.س</td>
                     <td className="px-6 py-4">{p.quantity}</td>
                   </tr>
                 ))}
@@ -188,12 +196,21 @@ const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ال
             </div>
             <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4">
               {errorMsg && <div className="mb-4 p-4 bg-rose-50 text-rose-700 rounded-xl text-sm font-bold">{errorMsg}</div>}
-              <div><label className="block text-sm font-bold text-slate-700 mb-1">اسم الصنف</label><input type="text" value={productForm.name} onChange={e => setProductForm({...productForm, name: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" /></div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div><label className="block text-sm font-bold text-slate-700 mb-1">اسم الصنف</label><input type="text" value={productForm.name} onChange={e => setProductForm({...productForm, name: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" /></div>
+                <div><label className="block text-sm font-bold text-slate-700 mb-1">الباركود (Barcode)</label><input type="text" value={productForm.barcode} onChange={e => setProductForm({...productForm, barcode: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" /></div>
+              </div>
+              
               <div><label className="block text-sm font-bold text-slate-700 mb-1">التصنيف</label><input type="text" value={productForm.category} onChange={e => setProductForm({...productForm, category: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" /></div>
               
               <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-bold text-slate-700 mb-1">سعر البيع الافتراضي</label><input type="number" value={productForm.price} onChange={e => setProductForm({...productForm, price: Number(e.target.value)})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" /></div>
-                <div><label className="block text-sm font-bold text-slate-700 mb-1">التكلفة (للمتوسط المرجح)</label><input type="number" value={productForm.cost} onChange={e => setProductForm({...productForm, cost: Number(e.target.value)})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" /></div>
+                <div><label className="block text-sm font-bold text-slate-700 mb-1">سعر الشراء (التكلفة)</label><input type="number" value={productForm.cost} onChange={e => setProductForm({...productForm, cost: Number(e.target.value)})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" /></div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">سعر البيع (قبل الضريبة)</label>
+                  <input type="number" value={productForm.price} onChange={e => setProductForm({...productForm, price: Number(e.target.value)})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" />
+                  <p className="text-xs text-slate-500 mt-1">شامل الضريبة: {(productForm.price * 1.15).toFixed(2)} ر.س</p>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

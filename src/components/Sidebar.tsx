@@ -28,6 +28,14 @@ const Sidebar: React.FC<{ onNavigate?: (module: string, tab?: string) => void }>
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  const user = JSON.parse(localStorage.getItem('gheras_admin') || '{}');
+  const isAdmin = user.email === 'elhassanelsoudy@gmail.com';
+
+  const filteredNavItems = navItems.filter(item => {
+    if (item.id === 'settings' && !isAdmin) return false;
+    return true;
+  });
+
   const toggleAccordion = (id: string) => {
     setOpenAccordion(openAccordion === id ? null : id);
   };
@@ -64,7 +72,7 @@ const Sidebar: React.FC<{ onNavigate?: (module: string, tab?: string) => void }>
 
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto py-6 px-4 space-y-1 custom-scrollbar">
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const isOpen = openAccordion === item.id;
           const Icon = item.icon;
           

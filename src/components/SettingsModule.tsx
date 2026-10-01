@@ -4,11 +4,22 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { Save, RefreshCw, Building, Upload, Image as ImageIcon } from 'lucide-react';
 
 const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إعدادات المؤسسة' }) => {
+  const user = JSON.parse(localStorage.getItem('gheras_admin') || '{}');
+  const isAdmin = user.email === 'elhassanelsoudy@gmail.com';
+
   const [activeTab, setActiveTab] = useState(initialTab);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  if (!isAdmin) {
+    return (
+      <div className="p-8 text-center text-red-500 font-bold">
+        عذراً، هذه الصفحة مخصصة للمسؤولين فقط.
+      </div>
+    );
+  }
 
   // Company Settings Form
   const [companyForm, setCompanyForm] = useState({
