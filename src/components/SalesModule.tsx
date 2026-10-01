@@ -16,12 +16,11 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
   const [adjustments, setAdjustments] = useState<any[]>([]);
   const [deliveryNotes, setDeliveryNotes] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]); // For inventory
+  const [branches, setBranches] = useState<any[]>([]);
   
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  
-  const branchId = 'MAIN_BRANCH';
 
   // Modal states
   const [modals, setModals] = useState({
@@ -42,15 +41,15 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
   
   // Advanced Invoice Form with Inventory items
   const [invoiceForm, setInvoiceForm] = useState({ 
-    date: '', customerName: '', store: '', preparedBy: '', pos: '', deliveryDate: '', paymentStatus: 'نقدي', confirmed: false,
+    date: '', customerName: '', branchId: '', preparedBy: '', pos: '', deliveryDate: '', paymentStatus: 'نقدي', confirmed: false,
     items: [{ productId: '', qty: 1, price: 0 }] 
   });
   
-  const [receiptForm, setReceiptForm] = useState({ receiptNo: '', invoiceNo: '', paymentMethod: 'كاش', amount: 0, date: '' });
-  const [refundForm, setRefundForm] = useState({ refundNo: '', invoiceNo: '', branch: '', amount: 0, date: '' });
-  const [creditNoteForm, setCreditNoteForm] = useState({ noteNo: '', invoiceNo: '', reason: '', amount: 0, zatcaStatus: 'مسودة' });
-  const [adjustmentForm, setAdjustmentForm] = useState({ customer: '', type: 'مدين', amount: 0, reason: '' });
-  const [deliveryNoteForm, setDeliveryNoteForm] = useState({ noteNo: '', invoiceNo: '', store: '', status: 'قيد التجهيز', date: '' });
+  const [receiptForm, setReceiptForm] = useState({ receiptNo: '', invoiceNo: '', paymentMethod: 'كاش', amount: 0, date: '', branchId: '' });
+  const [refundForm, setRefundForm] = useState({ refundNo: '', invoiceNo: '', branchId: '', amount: 0, date: '' });
+  const [creditNoteForm, setCreditNoteForm] = useState({ noteNo: '', invoiceNo: '', reason: '', amount: 0, zatcaStatus: 'مسودة', branchId: '' });
+  const [adjustmentForm, setAdjustmentForm] = useState({ customer: '', type: 'مدين', amount: 0, reason: '', branchId: '' });
+  const [deliveryNoteForm, setDeliveryNoteForm] = useState({ noteNo: '', invoiceNo: '', branchId: '', status: 'قيد التجهيز', date: '' });
 
   // Fetch data
   const fetchData = async () => {
@@ -62,9 +61,9 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
         return snap.docs.map(d => ({ id: d.id, ...d.data() }));
       };
       
-      const [cData, iData, qData, rData, refData, cnData, adjData, dnData, pData] = await Promise.all([
+      const [cData, iData, qData, rData, refData, cnData, adjData, dnData, pData, bData] = await Promise.all([
         getCol('customers'), getCol('sales'), getCol('quotations'), getCol('receipts'),
-        getCol('refunds'), getCol('credit_notes'), getCol('balance_adjustments'), getCol('delivery_notes'), getCol('products')
+        getCol('refunds'), getCol('credit_notes'), getCol('balance_adjustments'), getCol('delivery_notes'), getCol('products'), getCol('branches')
       ]);
 
       setCustomers(cData);
@@ -76,6 +75,7 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
       setAdjustments(adjData);
       setDeliveryNotes(dnData);
       setProducts(pData); // Loaded inventory items
+      setBranches(bData); // Loaded branches
     } catch (e) {
       console.error("Firestore fetch error:", e);
     } finally {
@@ -102,6 +102,8 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
       let totalValue = 0;
       let totalCost = 0;
       
+      if(!invoiceForm.branchId) throw new Error('يجب تحديد الفرع/المخزن.');
+      
       // We simulate checking inventory here. In a real app, use runTransaction for atomicity.
       for (const item of invoiceForm.items) {
         if(!item.productId) continue;
@@ -109,9 +111,13 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
         if(!prod) {
           throw new Error(`المنتج غير موجود.`);
         }
-        if((prod.quantity || 0) < item.qty) {
-          throw new Error(`الكمية غير كافية للمنتج: ${prod.name}`);
+        
+        // Multi-Warehouse Inventory Check
+        const branchStock = prod.branches && prod.branches[invoiceForm.branchId] !== undefined ? prod.branches[invoiceForm.branchId] : (prod.quantity || 0);
+        if(branchStock < item.qty) {
+          throw new Error(`الكمية غير كافية للمنتج: ${prod.name} في المخزن المحدد (المتوفر: ${branchStock})`);
         }
+        
         totalValue += (item.qty * item.price);
         totalCost += (item.qty * (prod.weightedAverageCost || 0)); // 2. Weighted Average
       }
@@ -156,7 +162,7 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
       // For UI simulation, we bypass the actual inventory deduction to preserve logic constraints.
 
       closeModal('invoice');
-      setInvoiceForm({ date: '', customerName: '', store: '', preparedBy: '', pos: '', deliveryDate: '', paymentStatus: 'نقدي', confirmed: false, items: [{ productId: '', qty: 1, price: 0 }] });
+      setInvoiceForm({ date: '', customerName: '', branchId: '', preparedBy: '', pos: '', deliveryDate: '', paymentStatus: 'نقدي', confirmed: false, items: [{ productId: '', qty: 1, price: 0 }] });
       fetchData();
     } catch (e: any) {
       setErrorMsg(e.message);
@@ -172,7 +178,6 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
     try {
       await addDoc(collection(db, 'receipts'), {
         ...receiptForm,
-        branchId,
         createdAt: serverTimestamp()
       });
       
@@ -180,7 +185,7 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
         reference: receiptForm.receiptNo,
         type: 'RECEIPT',
         date: receiptForm.date || new Date().toISOString(),
-        branchId,
+        branchId: receiptForm.branchId,
         createdAt: serverTimestamp(),
         entries: [
           { account: 'ح/ الصندوق أو البنك', debit: receiptForm.amount, credit: 0 },
@@ -189,7 +194,7 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
       });
 
       closeModal('receipt');
-      setReceiptForm({ receiptNo: '', invoiceNo: '', paymentMethod: 'كاش', amount: 0, date: '' });
+      setReceiptForm({ receiptNo: '', invoiceNo: '', paymentMethod: 'كاش', amount: 0, date: '', branchId: '' });
       fetchData();
     } catch (e) {
       console.error(e);
@@ -203,7 +208,6 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
     try {
       await addDoc(collection(db, 'refunds'), {
         ...refundForm,
-        branchId,
         createdAt: serverTimestamp()
       });
 
@@ -214,7 +218,7 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
         reference: refundForm.refundNo,
         type: 'REFUND',
         date: refundForm.date || new Date().toISOString(),
-        branchId,
+        branchId: refundForm.branchId,
         createdAt: serverTimestamp(),
         entries: [
           { account: 'ح/ إيرادات المبيعات (مرتجعات)', debit: revAmount, credit: 0 },
@@ -230,12 +234,12 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
         reason: 'إرجاع بضاعة',
         amount: refundForm.amount,
         zatcaStatus: 'مقبول',
-        branchId,
+        branchId: refundForm.branchId,
         createdAt: serverTimestamp()
       });
 
       closeModal('refund');
-      setRefundForm({ refundNo: '', invoiceNo: '', branch: '', amount: 0, date: '' });
+      setRefundForm({ refundNo: '', invoiceNo: '', branchId: '', amount: 0, date: '' });
       fetchData();
     } catch (e) {
       console.error(e);
@@ -249,7 +253,6 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
     try {
       await addDoc(collection(db, collectionName), {
         ...data,
-        branchId,
         createdAt: serverTimestamp()
       });
       closeModal(modalType);
@@ -264,9 +267,9 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
 
   const saveCustomer = () => handleSave('customers', customerForm, 'customer', () => setCustomerForm({ name: '', company: '', phone: '', openingBalance: 0 }));
   const saveQuotation = () => handleSave('quotations', quotationForm, 'quotation', () => setQuotationForm({ date: '', expiry: '', customerName: '', store: '', products: [{ name: '', qty: 1, discount: 0 }], totalDiscount: 0 }));
-  const saveCreditNote = () => handleSave('credit_notes', creditNoteForm, 'creditNote', () => setCreditNoteForm({ noteNo: '', invoiceNo: '', reason: '', amount: 0, zatcaStatus: 'مسودة' }));
-  const saveAdjustment = () => handleSave('balance_adjustments', adjustmentForm, 'adjustment', () => setAdjustmentForm({ customer: '', type: 'مدين', amount: 0, reason: '' }));
-  const saveDeliveryNote = () => handleSave('delivery_notes', deliveryNoteForm, 'deliveryNote', () => setDeliveryNoteForm({ noteNo: '', invoiceNo: '', store: '', status: 'قيد التجهيز', date: '' }));
+  const saveCreditNote = () => handleSave('credit_notes', creditNoteForm, 'creditNote', () => setCreditNoteForm({ noteNo: '', invoiceNo: '', reason: '', amount: 0, zatcaStatus: 'مسودة', branchId: '' }));
+  const saveAdjustment = () => handleSave('balance_adjustments', adjustmentForm, 'adjustment', () => setAdjustmentForm({ customer: '', type: 'مدين', amount: 0, reason: '', branchId: '' }));
+  const saveDeliveryNote = () => handleSave('delivery_notes', deliveryNoteForm, 'deliveryNote', () => setDeliveryNoteForm({ noteNo: '', invoiceNo: '', branchId: '', status: 'قيد التجهيز', date: '' }));
 
   // Shared UI components
   const Modal = ({ isOpen, onClose, title, children, onSave }: any) => {
@@ -437,7 +440,18 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
               </select>
             </div>
           </div>
-          <div><label className="block text-sm font-bold text-slate-700 mb-1">العميل</label><input type="text" value={invoiceForm.customerName} onChange={e => setInvoiceForm({...invoiceForm, customerName: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" /></div>
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className="block text-sm font-bold text-slate-700 mb-1">العميل</label><input type="text" value={invoiceForm.customerName} onChange={e => setInvoiceForm({...invoiceForm, customerName: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" /></div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1">الفرع (المخزن)</label>
+              <select value={invoiceForm.branchId} onChange={e => setInvoiceForm({...invoiceForm, branchId: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50">
+                <option value="">اختر الفرع...</option>
+                {branches.map(b => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
           
           <div className="mt-6 border-t border-slate-200 pt-4">
             <h4 className="font-bold text-slate-800 mb-3">الأصناف المشتراة</h4>
@@ -484,6 +498,15 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'قائم
           <div><label className="block text-sm font-bold text-slate-700 mb-1">رقم الإيصال</label><input type="text" value={receiptForm.receiptNo} onChange={e => setReceiptForm({...receiptForm, receiptNo: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" /></div>
           <div><label className="block text-sm font-bold text-slate-700 mb-1">الفاتورة المستحقة</label><input type="text" value={receiptForm.invoiceNo} onChange={e => setReceiptForm({...receiptForm, invoiceNo: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" /></div>
           <div><label className="block text-sm font-bold text-slate-700 mb-1">المبلغ المقبوض</label><input type="number" value={receiptForm.amount} onChange={e => setReceiptForm({...receiptForm, amount: Number(e.target.value)})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50" /></div>
+          <div>
+            <label className="block text-sm font-bold text-slate-700 mb-1">الفرع (المخزن)</label>
+            <select value={receiptForm.branchId} onChange={e => setReceiptForm({...receiptForm, branchId: e.target.value})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50">
+              <option value="">اختر الفرع...</option>
+              {branches.map(b => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </Modal>
 
