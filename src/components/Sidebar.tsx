@@ -14,11 +14,12 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 const navItems = [
-  { id: 'sales', label: 'المبيعات', icon: ShoppingCart, subItems: ['العمليات'] },
-  { id: 'purchases', label: 'المشتريات', icon: Package, subItems: ['العمليات'] },
-  { id: 'inventory', label: 'المخازن', icon: LayoutDashboard, subItems: ['المستودعات'] },
-  { id: 'accounting', label: 'المحاسبة', icon: Calculator, subItems: ['التقارير المالية'] },
-  { id: 'settings', label: 'الإعدادات', icon: Settings, subItems: ['الإعدادات العامة'] },
+  { id: 'sales', label: 'المبيعات', icon: ShoppingCart, subItems: ['العمليات', 'نقطة البيع السريع (POS)', 'مرتجع المبيعات', 'عروض الأسعار'] },
+  { id: 'purchases', label: 'المشتريات', icon: Package, subItems: ['فاتورة المشتريات', 'دورة المشتريات', 'بطاقة المورد'] },
+  { id: 'inventory', label: 'المخازن', icon: LayoutDashboard, subItems: ['المستودعات', 'الأصناف', 'حركة المخزون'] },
+  { id: 'accounting', label: 'المحاسبة', icon: Calculator, subItems: ['شجرة الحسابات', 'القيود اليومية', 'سندات القبض والصرف', 'التقارير المالية'] },
+  { id: 'hr', label: 'الموارد البشرية', icon: Users, subItems: ['ملفات الموظفين', 'الحضور والانصراف', 'العهد النقدية', 'مسيرات الرواتب'] },
+  { id: 'settings', label: 'الإعدادات', icon: Settings, subItems: ['الإعدادات العامة', 'إدارة المستخدمين', 'النسخ الاحتياطي'] },
 ];
 
 const Sidebar: React.FC<{ onNavigate?: (module: string, tab?: string) => void }> = ({ onNavigate }) => {

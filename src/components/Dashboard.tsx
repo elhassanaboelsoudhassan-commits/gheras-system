@@ -6,6 +6,7 @@ import PurchasesModule from './PurchasesModule';
 import InventoryModule from './InventoryModule';
 import SettingsModule from './SettingsModule';
 import HRModule from './HRModule';
+import AccountingModule from './AccountingModule';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -55,6 +56,8 @@ const Dashboard: React.FC = () => {
             <PurchasesModule initialTab={activeView.tab} />
           ) : activeView.module === 'inventory' ? (
             <InventoryModule initialTab={activeView.tab} />
+          ) : activeView.module === 'accounting' ? (
+            <AccountingModule initialTab={activeView.tab} />
           ) : activeView.module === 'settings' ? (
             <SettingsModule initialTab={activeView.tab} />
           ) : activeView.module === 'hr' ? (
