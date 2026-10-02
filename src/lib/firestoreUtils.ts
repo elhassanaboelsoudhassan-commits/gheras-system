@@ -462,16 +462,16 @@ export const processSalesReturn = async (returnData: SalesReturn) => {
       transaction.set(journalRef, {
         referenceId: returnRef.id,
         date: returnData.createdAt,
-        type: 'ãÑÊÌÚ ãÈíÚÇÊ',
-        description: ãÑÊÌÚ ãÈíÚÇÊ ááİÇÊæÑÉ \,
+        type: 'Ù…Ø±ØªØ¬Ø¹ Ù…Ø¨ÙŠØ¹Ø§Øª',
+        description: `Ù…Ø±ØªØ¬Ø¹ Ù…Ø¨ÙŠØ¹Ø§Øª Ù„Ù„ÙØ§ØªÙˆØ±Ø© ${returnData.originalInvoiceId}`,
         totalAmount: returnData.total,
         entries: [
           // Debit: Sales Revenue
-          { accountName: 'ÅíÑÇÏÇÊ ÇáãÈíÚÇÊ', debit: returnData.subTotal, credit: 0 },
+          { accountName: 'Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª', debit: returnData.subTotal, credit: 0 },
           // Debit: VAT Payable
-          { accountName: 'ÖÑíÈÉ ÇáŞíãÉ ÇáãÖÇİÉ ÇáãÓÊÍŞÉ', debit: returnData.vat, credit: 0 },
+          { accountName: 'Ø¶Ø±ÙŠØ¨Ø© Ø§Ù„Ù‚ÙŠÙ…Ø© Ø§Ù„Ù…Ø¶Ø§ÙØ© Ø§Ù„Ù…Ø³ØªØ­Ù‚Ø©', debit: returnData.vat, credit: 0 },
           // Credit: Cash/Bank
-          { accountName: returnData.refundMethod === 'äŞÏí' ? 'ÇáÕäÏæŞ' : 'ÇáÈäß', debit: 0, credit: returnData.total }
+          { accountName: returnData.refundMethod === 'Ù†Ù‚Ø¯ÙŠ' ? 'Ø§Ù„ØµÙ†Ø¯ÙˆÙ‚' : 'Ø§Ù„Ø¨Ù†Ùƒ', debit: 0, credit: returnData.total }
         ]
       });
     });
