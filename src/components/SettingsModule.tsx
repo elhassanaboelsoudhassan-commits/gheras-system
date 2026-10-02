@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, MapPin, Users, Shield, Save, Key, Database, RefreshCw, Calendar, DollarSign, CheckCircle } from 'lucide-react';
-import { getSettings, updateSettings, type SettingsData } from '../lib/firestoreUtils';
-import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+
+export interface SettingsData {
+  companyNameAr: string;
+  companyNameEn: string;
+  taxNumber: string;
+  nationalAddress: string;
+  contactNumbers: string;
+}
 
 const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إعدادات المنشأة والفروع' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -26,10 +33,18 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
 
   useEffect(() => {
     const fetchSettings = async () => {
-      const result = await getSettings();
-      if (result.success && result.data) {
-        setSettings(result.data);
-        setSettingsId(result.id || null);
+      try {
+        const docRef = doc(db, 'settings', 'profile');
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setSettings(docSnap.data() as SettingsData);
+          setSettingsId(docSnap.id);
+        } else {
+          // Default data
+          setSettings(prev => ({ ...prev, companyNameAr: 'مشاتل غصن يميس' }));
+        }
+      } catch (error) {
+        console.error("Failed to fetch settings", error);
       }
     };
     fetchSettings();
@@ -65,12 +80,11 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
     setIsSaving(true);
     setSaveSuccess(false);
     try {
-      const result = await updateSettings(settingsId, settings);
-      if (result.success) {
-        setSettingsId(result.id || null);
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
-      }
+      const docRef = doc(db, 'settings', 'profile');
+      await setDoc(docRef, settings, { merge: true });
+      setSettingsId('profile');
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
       console.error("Failed to save settings", error);
     } finally {
