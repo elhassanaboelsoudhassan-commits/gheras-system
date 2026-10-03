@@ -28,7 +28,7 @@ function App() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        if (parsed.email === 'elhassanelsoudy@gmail.com') return true;
+        if (parsed && parsed.email) return true;
       } catch (e) {}
     }
     return false;
@@ -46,13 +46,13 @@ function App() {
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
-          if (parsed.email === 'elhassanelsoudy@gmail.com') {
+          if (parsed && parsed.email) {
             isBypass = true;
           }
         } catch (e) {}
       }
 
-      if (user && user.email === 'elhassanelsoudy@gmail.com') {
+      if (user) {
         localStorage.setItem('gheras_admin', JSON.stringify({ role: 'admin', email: user.email }));
         setIsAuthenticated(true);
       } else if (isBypass) {

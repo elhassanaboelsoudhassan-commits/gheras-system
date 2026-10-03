@@ -311,7 +311,7 @@ const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'بط
               </div>
             )}
 
-            <button onClick={handleSaveItem} disabled={isSaving} className="w-full py-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-200 disabled:opacity-70">
+            <button onClick={handleSaveItem} disabled={false} className="w-full py-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-200 disabled:opacity-70">
               {isSaving ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Save size={20} />}
               {isSaving ? 'جاري الحفظ...' : 'حفظ بيانات الصنف'}
             </button>

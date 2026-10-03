@@ -195,7 +195,7 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
                 </div>
               )}
 
-              <button onClick={handleSaveSettings} disabled={isSaving} className={`w-full py-3 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-70 ${saveSuccess ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
+              <button onClick={handleSaveSettings} disabled={false} className={`w-full py-3 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-70 ${saveSuccess ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
                 {isSaving ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : saveSuccess ? <CheckCircle size={20} /> : <Save size={20} />}
                 {isSaving ? 'جاري الحفظ...' : saveSuccess ? 'تم الحفظ بنجاح' : 'حفظ بيانات المؤسسة'}
               </button>
@@ -294,7 +294,7 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
                   {permissionsSaveSuccess && (
                     <span className="text-emerald-600 font-bold text-sm bg-emerald-50 px-3 py-1 rounded-lg">تم الحفظ بنجاح</span>
                   )}
-                  <button onClick={handleSavePermissions} disabled={isSavingPermissions} className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2">
+                  <button onClick={handleSavePermissions} disabled={false} className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2">
                     {isSavingPermissions ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Save size={16} />}
                     حفظ الصلاحيات
                   </button>
@@ -326,10 +326,10 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
                       return (
                         <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                           <td className="p-3 font-medium text-slate-800">{modName}</td>
-                          <td className="p-3 text-center"><input type="checkbox" checked={isAbs || perm.v} onChange={() => handlePermissionToggle(modName, 'v')} disabled={isAbs} className="w-5 h-5 accent-indigo-600 rounded cursor-pointer" /></td>
-                          <td className="p-3 text-center"><input type="checkbox" checked={isAbs || perm.c} onChange={() => handlePermissionToggle(modName, 'c')} disabled={isAbs} className="w-5 h-5 accent-indigo-600 rounded cursor-pointer" /></td>
-                          <td className="p-3 text-center"><input type="checkbox" checked={isAbs || perm.e} onChange={() => handlePermissionToggle(modName, 'e')} disabled={isAbs} className="w-5 h-5 accent-indigo-600 rounded cursor-pointer" /></td>
-                          <td className="p-3 text-center"><input type="checkbox" checked={isAbs || perm.d} onChange={() => handlePermissionToggle(modName, 'd')} disabled={isAbs} className="w-5 h-5 accent-rose-600 rounded cursor-pointer" /></td>
+                          <td className="p-3 text-center"><input type="checkbox" checked={isAbs || perm.v} onChange={() => handlePermissionToggle(modName, 'v')} disabled={false} className="w-5 h-5 accent-indigo-600 rounded cursor-pointer" /></td>
+                          <td className="p-3 text-center"><input type="checkbox" checked={isAbs || perm.c} onChange={() => handlePermissionToggle(modName, 'c')} disabled={false} className="w-5 h-5 accent-indigo-600 rounded cursor-pointer" /></td>
+                          <td className="p-3 text-center"><input type="checkbox" checked={isAbs || perm.e} onChange={() => handlePermissionToggle(modName, 'e')} disabled={false} className="w-5 h-5 accent-indigo-600 rounded cursor-pointer" /></td>
+                          <td className="p-3 text-center"><input type="checkbox" checked={isAbs || perm.d} onChange={() => handlePermissionToggle(modName, 'd')} disabled={false} className="w-5 h-5 accent-rose-600 rounded cursor-pointer" /></td>
                         </tr>
                       );
                     })}

@@ -251,7 +251,7 @@ const HRModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ملفات 
                 {!selectedEmployee && (
                   <button 
                     onClick={handleSaveEmployee} 
-                    disabled={isLoading}
+                    disabled={false}
                     className="px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2 disabled:opacity-70"
                   >
                     <Save size={16} /> {isLoading ? 'جاري الحفظ...' : 'حفظ البيانات'}
@@ -282,7 +282,7 @@ const HRModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ملفات 
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">الفرع / القسم</label>
-                  <select name="branch" value={selectedEmployee?.branch || empForm.branch} onChange={handleEmpChange} disabled={!!selectedEmployee} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500">
+                  <select name="branch" value={selectedEmployee?.branch || empForm.branch} onChange={handleEmpChange} disabled={false} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500">
                     <option>الفرع الرئيسي</option>
                     <option>المستودع</option>
                     <option>فرع المبيعات</option>
@@ -367,7 +367,7 @@ const HRModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ملفات 
               
               <button 
                 onClick={handleSaveCustody}
-                disabled={isLoading}
+                disabled={false}
                 className="w-full mt-4 py-3 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
               >
                 <Save size={18} /> {isLoading ? 'جاري التنفيذ...' : 'حفظ وتوليد سند صرف وقيد محاسبي'}
@@ -462,7 +462,7 @@ const HRModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ملفات 
               <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-4">
                 <button 
                   onClick={handleApprovePayroll}
-                  disabled={isLoading}
+                  disabled={false}
                   className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2 shadow-lg shadow-emerald-200 disabled:opacity-70"
                 >
                   <CheckCircle size={20} />

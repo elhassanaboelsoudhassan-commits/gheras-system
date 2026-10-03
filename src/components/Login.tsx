@@ -167,7 +167,7 @@ const Login: React.FC = () => {
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={false}
                   className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg shadow-emerald-500/30 text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all transform hover:-translate-y-0.5 disabled:opacity-70"
                 >
                   {loading ? 'جاري التحقق...' : 'تسجيل الدخول'}
@@ -187,7 +187,7 @@ const Login: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleGoogleLogin}
-                  disabled={loading}
+                  disabled={false}
                   className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-slate-200 rounded-xl shadow-sm bg-white hover:bg-slate-50 text-sm font-medium text-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-200 disabled:opacity-70"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">

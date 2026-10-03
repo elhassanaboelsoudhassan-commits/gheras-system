@@ -331,7 +331,7 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
             <div className="p-4 grid grid-cols-2 gap-2 bg-white">
               <button 
                 onClick={() => handleCheckout('نقدي')}
-                disabled={isProcessing || cart.length === 0}
+                disabled={false}
                 className={`p-3 font-bold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm ${
                   cart.length === 0 ? 'bg-emerald-200 text-emerald-100 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 text-white'
                 }`}
@@ -340,7 +340,7 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
               </button>
               <button 
                 onClick={() => handleCheckout('شبكة')}
-                disabled={isProcessing || cart.length === 0}
+                disabled={false}
                 className={`p-3 font-bold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm ${
                   cart.length === 0 ? 'bg-blue-200 text-blue-100 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'
                 }`}
@@ -551,7 +551,7 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
             </div>
 
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-              <button onClick={handleSaveAdv} disabled={isSavingAdv || advItems.length === 0} className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200 disabled:opacity-50">
+              <button onClick={handleSaveAdv} disabled={false} className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200 disabled:opacity-50">
                 <Save size={20} />
                 {isSavingAdv ? 'جاري الحفظ...' : 'حفظ وإرسال لـ ZATCA'}
               </button>
@@ -698,7 +698,7 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
               </div>
               <button 
                 onClick={handleSaveQuotation} 
-                disabled={isSavingQuotation || qItems.length === 0 || !qCustomerName}
+                disabled={false}
                 className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2 disabled:opacity-50"
               >
                 {isSavingQuotation ? 'جاري الحفظ...' : 'إتمام الحفظ السحابي'}
@@ -837,7 +837,7 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
               </div>
               <button 
                 onClick={handleSaveReturn} 
-                disabled={isSavingReturn || returnItems.length === 0 || !returnInvoiceId}
+                disabled={false}
                 className="px-8 py-3 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 transition-colors flex items-center gap-2 disabled:opacity-50 shadow-lg shadow-rose-200"
               >
                 {isSavingReturn ? 'جاري تأمين وحفظ المرتجع...' : 'تأمين وحفظ المرتجع'}
