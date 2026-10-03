@@ -28,6 +28,49 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
   const [returnItems, setReturnItems] = useState<{ id: string, name: string, qty: number, price: number }[]>([]);
   const [isSavingReturn, setIsSavingReturn] = useState(false);
 
+  // Advanced Invoice State
+  const [advItems, setAdvItems] = useState<{ id: string, product: string, quantity: number, price: number, discount: number, total: number }[]>([]);
+  const [advCustomer, setAdvCustomer] = useState('عميل نقدي افتراضي');
+  const [advTerms, setAdvTerms] = useState('نقدي / فوري');
+  const [advNotes, setAdvNotes] = useState('');
+  const [isSavingAdv, setIsSavingAdv] = useState(false);
+
+  const handleSaveAdv = async () => {
+    setIsSavingAdv(true);
+    try {
+      const db = (await import('../firebase')).db;
+      const { collection, addDoc } = await import('firebase/firestore');
+      
+      const totalBeforeTax = advItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+      const totalDiscount = advItems.reduce((sum, item) => sum + (item.discount || 0), 0);
+      const taxAmount = (totalBeforeTax - totalDiscount) * 0.15;
+      const netTotal = (totalBeforeTax - totalDiscount) + taxAmount;
+
+      await addDoc(collection(db, "quotations"), {
+        customerName: advCustomer,
+        branch: "الفرع الرئيسي",
+        issueDate: new Date().toISOString().split('T')[0],
+        items: advItems,
+        notes: advNotes,
+        terms: advTerms,
+        totalBeforeTax,
+        totalDiscount,
+        taxAmount,
+        netTotal,
+        createdAt: new Date().toISOString()
+      });
+      
+      setNotification({ message: 'تم الحفظ وإرسال الفاتورة بنجاح!', type: 'success' });
+      setAdvItems([]);
+      setAdvNotes('');
+    } catch (e) {
+      console.error(e);
+      setNotification({ message: 'حدث خطأ أثناء الحفظ', type: 'error' });
+    } finally {
+      setIsSavingAdv(false);
+    }
+  };
+
   const tabs = ['نقطة البيع السريع (POS)', 'فاتورة مبيعات متقدمة', 'عروض الأسعار', 'مرتجع المبيعات'];
 
   useEffect(() => {
@@ -364,7 +407,7 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">العميل (الذمم الآجلة)</label>
-                  <select className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500">
+                  <select value={advCustomer} onChange={e => setAdvCustomer(e.target.value)} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500">
                     <option>عميل نقدي افتراضي</option>
                     <option>شركة المزارع الحديثة (سقف ائتمان: 50,000)</option>
                     <option>مؤسسة الورود (سقف ائتمان: 15,000)</option>
@@ -372,7 +415,7 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">شروط الدفع / الاستحقاق</label>
-                  <select className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500">
+                  <select value={advTerms} onChange={e => setAdvTerms(e.target.value)} className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500">
                     <option>نقدي / فوري</option>
                     <option>آجل 30 يوم</option>
                     <option>آجل 60 يوم</option>
@@ -394,18 +437,55 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b border-slate-100">
-                      <td className="p-3 text-center text-slate-400">1</td>
-                      <td className="p-3"><input type="text" className="w-full p-1.5 border border-slate-200 rounded outline-none" placeholder="بحث عن صنف..." /></td>
-                      <td className="p-3"><input type="number" className="w-full p-1.5 border border-slate-200 rounded outline-none" defaultValue={1} /></td>
-                      <td className="p-3"><input type="number" className="w-full p-1.5 border border-slate-200 rounded outline-none" /></td>
-                      <td className="p-3"><input type="number" className="w-full p-1.5 border border-rose-200 rounded outline-none" placeholder="%" /></td>
-                      <td className="p-3 font-mono text-slate-500">0.00</td>
-                      <td className="p-3 font-mono font-bold text-slate-700">0.00</td>
-                    </tr>
+                    {advItems.map((item, index) => (
+                      <tr key={item.id} className="border-b border-slate-100">
+                        <td className="p-3 text-center text-slate-400">{index + 1}</td>
+                        <td className="p-3">
+                          <input type="text" value={item.product} onChange={(e) => {
+                            const newItems = [...advItems];
+                            newItems[index].product = e.target.value;
+                            setAdvItems(newItems);
+                          }} className="w-full p-1.5 border border-slate-200 rounded outline-none" placeholder="بحث عن صنف..." />
+                        </td>
+                        <td className="p-3">
+                          <input type="number" value={item.quantity} onChange={(e) => {
+                            const newItems = [...advItems];
+                            newItems[index].quantity = Number(e.target.value);
+                            newItems[index].total = (newItems[index].quantity * newItems[index].price) - newItems[index].discount;
+                            setAdvItems(newItems);
+                          }} className="w-full p-1.5 border border-slate-200 rounded outline-none" min={1} />
+                        </td>
+                        <td className="p-3">
+                          <input type="number" value={item.price} onChange={(e) => {
+                            const newItems = [...advItems];
+                            newItems[index].price = Number(e.target.value);
+                            newItems[index].total = (newItems[index].quantity * newItems[index].price) - newItems[index].discount;
+                            setAdvItems(newItems);
+                          }} className="w-full p-1.5 border border-slate-200 rounded outline-none" min={0} />
+                        </td>
+                        <td className="p-3">
+                          <input type="number" value={item.discount} onChange={(e) => {
+                            const newItems = [...advItems];
+                            newItems[index].discount = Number(e.target.value);
+                            newItems[index].total = (newItems[index].quantity * newItems[index].price) - newItems[index].discount;
+                            setAdvItems(newItems);
+                          }} className="w-full p-1.5 border border-rose-200 rounded outline-none" min={0} />
+                        </td>
+                        <td className="p-3 font-mono text-slate-500">{((item.quantity * item.price - item.discount) * 0.15).toFixed(2)}</td>
+                        <td className="p-3 font-mono font-bold text-slate-700">{item.total.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                    {advItems.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="p-4 text-center text-slate-500">لم يتم إضافة منتجات بعد.</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
-                <button className="w-full p-3 text-blue-600 font-bold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 border-t border-slate-200">
+                <button 
+                  onClick={() => setAdvItems([...advItems, { id: Date.now().toString(), product: "", quantity: 1, price: 0, discount: 0, total: 0 }])}
+                  className="w-full p-3 text-blue-600 font-bold hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 border-t border-slate-200"
+                >
                   <Plus size={18} /> إضافة سطر جديد
                 </button>
               </div>
@@ -413,25 +493,25 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
               <div className="mt-6 flex justify-between items-start">
                 <div className="w-1/2">
                   <label className="block text-sm font-bold text-slate-700 mb-1">ملاحظات الفاتورة</label>
-                  <textarea className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 h-24 resize-none" placeholder="اكتب أي ملاحظات للعميل أو شروط إضافية..."></textarea>
+                  <textarea value={advNotes} onChange={e => setAdvNotes(e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 h-24 resize-none" placeholder="اكتب أي ملاحظات للعميل أو شروط إضافية..."></textarea>
                 </div>
                 
                 <div className="w-1/3 bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
                   <div className="flex justify-between text-sm text-slate-600">
                     <span>الإجمالي قبل الضريبة:</span>
-                    <span className="font-mono">0.00</span>
+                    <span className="font-mono">{advItems.reduce((sum, item) => sum + (item.quantity * item.price), 0).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-rose-600">
                     <span>إجمالي الخصومات:</span>
-                    <span className="font-mono">0.00</span>
+                    <span className="font-mono">{advItems.reduce((sum, item) => sum + item.discount, 0).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-slate-600">
                     <span>إجمالي الضريبة (15%):</span>
-                    <span className="font-mono">0.00</span>
+                    <span className="font-mono">{(advItems.reduce((sum, item) => sum + ((item.quantity * item.price) - item.discount), 0) * 0.15).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-lg font-bold text-blue-800 pt-2 border-t border-slate-200 mt-2">
                     <span>الصافي المستحق:</span>
-                    <span className="font-mono">0.00 SAR</span>
+                    <span className="font-mono">{(advItems.reduce((sum, item) => sum + ((item.quantity * item.price) - item.discount), 0) * 1.15).toFixed(2)} SAR</span>
                   </div>
                 </div>
               </div>
@@ -465,11 +545,11 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
             </div>
 
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-              <button className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200">
+              <button onClick={handleSaveAdv} disabled={isSavingAdv || advItems.length === 0} className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200 disabled:opacity-50">
                 <Save size={20} />
-                حفظ وإرسال لـ ZATCA
+                {isSavingAdv ? 'جاري الحفظ...' : 'حفظ وإرسال لـ ZATCA'}
               </button>
-              <button className="w-full py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2 border border-slate-200">
+              <button onClick={() => window.print()} className="w-full py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2 border border-slate-200">
                 <Printer size={18} />
                 معاينة الطباعة (QR Code)
               </button>
