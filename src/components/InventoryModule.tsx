@@ -59,6 +59,12 @@ const computeWeightedAverage = async (itemId: string) => {
 
 const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'بطاقة الصنف الشاملة' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
+
   const [activeModal, setActiveModal] = useState<string | null>(null);
   
   // Items List State
@@ -89,10 +95,6 @@ const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'بط
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-  useEffect(() => {
-    window.dispatchEvent(new Event('resize'));
-  }, []);
-
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,

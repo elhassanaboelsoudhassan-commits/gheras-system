@@ -85,6 +85,12 @@ const computeTrialBalance = async (): Promise<{ success: boolean; data?: ChartOf
 
 const AccountingModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'لوحة التقارير المركزية' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
+
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [accounts, setAccounts] = useState<ChartOfAccount[]>([]);
@@ -94,10 +100,6 @@ const AccountingModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ل�
   const tabs = ['لوحة التقارير المركزية', 'شجرة الحسابات', 'الدفاتر المحاسبية', 'ميزان المراجعة'];
 
   const showNotification = (message: string, type: 'success' | 'error') => {
-  useEffect(() => {
-    window.dispatchEvent(new Event('resize'));
-  }, []);
-
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   };

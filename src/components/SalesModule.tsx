@@ -4,6 +4,12 @@ import { getItems, processSale, addQuotation, processSalesReturn, type ItemData,
 
 const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة البيع السريع (POS)' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
+
   const [items, setItems] = useState<(ItemData & { id: string })[]>([]);
   const [cart, setCart] = useState<SaleItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');

@@ -13,6 +13,12 @@ export interface SettingsData {
 
 const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إعدادات المنشأة والفروع' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
+
 
   // Settings State
   const [settings, setSettings] = useState<SettingsData>({
@@ -72,10 +78,6 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  useEffect(() => {
-    window.dispatchEvent(new Event('resize'));
-  }, []);
-
     const { name, value } = e.target;
     setSettings(prev => ({ ...prev, [name]: value }));
   };

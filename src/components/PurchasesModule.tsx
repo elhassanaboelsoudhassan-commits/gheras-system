@@ -3,6 +3,12 @@ import { ShoppingBag, Truck, ClipboardList, RotateCcw, Building, Plus, FilePlus,
 
 const PurchasesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'فاتورة المشتريات' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
+
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
   const tabs = ['فاتورة المشتريات', 'دورة المشتريات', 'بطاقة المورد'];

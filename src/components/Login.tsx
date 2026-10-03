@@ -39,7 +39,7 @@ const Login: React.FC = () => {
     if (email === 'elhassanelsoudy@gmail.com' && password === 'hassan@2016') {
       localStorage.setItem('gheras_admin', JSON.stringify({ role: 'admin', email }));
       saveAdminToFirestore(email).catch(console.error);
-      navigate('/dashboard');
+      window.location.href = '/dashboard';
       return;
     }
 
@@ -51,7 +51,7 @@ const Login: React.FC = () => {
       const { signInWithEmailAndPassword } = await import('firebase/auth');
       await signInWithEmailAndPassword(auth, email, password);
       localStorage.setItem('gheras_admin', JSON.stringify({ role: 'user', email }));
-      navigate('/dashboard');
+      window.location.href = '/dashboard';
     } catch (err: any) {
       setError('بيانات الدخول غير صحيحة أو الحساب غير موجود، يرجى المحاولة مرة أخرى.');
     } finally {
@@ -67,7 +67,7 @@ const Login: React.FC = () => {
       if (result.user.email === 'elhassanelsoudy@gmail.com') {
         saveAdminToFirestore(result.user.email).catch(console.error);
         localStorage.setItem('gheras_admin', JSON.stringify({ role: 'admin', email: result.user.email }));
-        navigate('/dashboard');
+        window.location.href = '/dashboard';
       } else {
         setError('هذا الحساب غير مصرح له بالدخول كمسؤول.');
         auth.signOut();

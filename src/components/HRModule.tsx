@@ -14,6 +14,12 @@ import {
 
 const HRModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ملفات الموظفين' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
+
   const [activeModal, setActiveModal] = useState<string | null>(null);
   
   // Employees State
@@ -55,10 +61,6 @@ const HRModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ملفات 
   const tabs = ['ملفات الموظفين', 'الحضور والانصراف', 'العهد النقدية', 'مسيرات الرواتب'];
 
   const showNotification = (message: string, type: 'success' | 'error') => {
-  useEffect(() => {
-    window.dispatchEvent(new Event('resize'));
-  }, []);
-
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   };
