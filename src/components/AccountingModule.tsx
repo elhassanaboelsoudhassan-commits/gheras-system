@@ -94,6 +94,10 @@ const AccountingModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ل�
   const tabs = ['لوحة التقارير المركزية', 'شجرة الحسابات', 'الدفاتر المحاسبية', 'ميزان المراجعة'];
 
   const showNotification = (message: string, type: 'success' | 'error') => {
+  useEffect(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, []);
+
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   };

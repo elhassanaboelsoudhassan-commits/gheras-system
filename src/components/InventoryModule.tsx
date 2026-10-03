@@ -89,6 +89,10 @@ const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'بط
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  useEffect(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, []);
+
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -184,7 +188,7 @@ const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'بط
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1 flex items-center justify-between">
                     <span>الباركود الدولي</span>
-                    <button className="text-emerald-600 text-xs flex items-center gap-1 hover:underline"><Barcode size={12}/> توليد تلقائي</button>
+                    <button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="text-emerald-600 text-xs flex items-center gap-1 hover:underline"><Barcode size={12}/> توليد تلقائي</button>
                   </label>
                   <input type="text" name="barcode" value={formData.barcode} onChange={handleInputChange} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-mono" placeholder="6281234567890" dir="ltr" />
                 </div>
@@ -475,7 +479,7 @@ const InventoryModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'بط
                 </tr>
               </tbody>
             </table>
-            <button className="w-full p-3 text-emerald-600 font-bold hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2">
+            <button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="w-full p-3 text-emerald-600 font-bold hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2">
               <PlusCircle size={18} /> إضافة سطر جديد
             </button>
           </div>

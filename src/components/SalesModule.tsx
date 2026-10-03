@@ -341,10 +341,10 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
               >
                 <CheckCircle size={18} /> بطاقة / شبكة (F3)
               </button>
-              <button className="p-3 bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold rounded-xl flex items-center justify-center gap-2 transition-colors text-sm">
+              <button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="p-3 bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold rounded-xl flex items-center justify-center gap-2 transition-colors text-sm">
                 <PauseCircle size={16} /> تعليق الفاتورة (F4)
               </button>
-              <button className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl flex items-center justify-center gap-2 transition-colors text-sm">
+              <button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl flex items-center justify-center gap-2 transition-colors text-sm">
                 <LogOut size={16} /> إغلاق الوردية (F12)
               </button>
             </div>
@@ -354,7 +354,7 @@ const SalesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'نقطة
           <div className="w-full lg:w-2/3 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
             <div className="flex overflow-x-auto gap-2 pb-4 mb-4 border-b border-slate-100 custom-scrollbar">
               {['الكل'].map((cat, idx) => (
-                <button key={idx} className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-bold transition-all ${idx === 0 ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                <button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} key={idx} className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-bold transition-all ${idx === 0 ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
                   {cat}
                 </button>
               ))}

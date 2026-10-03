@@ -55,6 +55,10 @@ const HRModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'ملفات 
   const tabs = ['ملفات الموظفين', 'الحضور والانصراف', 'العهد النقدية', 'مسيرات الرواتب'];
 
   const showNotification = (message: string, type: 'success' | 'error') => {
+  useEffect(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, []);
+
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   };

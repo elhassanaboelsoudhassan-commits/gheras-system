@@ -7,6 +7,10 @@ import { onAuthStateChanged } from 'firebase/auth';
 import './index.css';
 
 const ProtectedRoute = ({ children, isAuthenticated }: { children: JSX.Element, isAuthenticated: boolean }) => {
+  useEffect(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, []);
+
   const location = useLocation();
   if (!isAuthenticated && location.pathname !== '/') {
     return <Navigate to="/" replace />;

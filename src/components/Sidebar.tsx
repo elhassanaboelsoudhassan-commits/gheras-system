@@ -54,6 +54,10 @@ const Sidebar: React.FC<{ onNavigate?: (module: string, tab?: string) => void }>
   });
 
   const toggleAccordion = (id: string) => {
+  useEffect(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, []);
+
     setOpenAccordion(openAccordion === id ? null : id);
   };
 

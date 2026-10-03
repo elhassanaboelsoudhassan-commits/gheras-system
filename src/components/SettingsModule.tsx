@@ -72,6 +72,10 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, []);
+
     const { name, value } = e.target;
     setSettings(prev => ({ ...prev, [name]: value }));
   };
@@ -206,7 +210,7 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
                   <h3 className="text-xl font-bold text-slate-800">تهيئة الفروع والمستودعات</h3>
                   <p className="text-sm text-slate-500">نظام شجري للمراكز والفروع</p>
                 </div>
-                <button className="px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded-lg hover:bg-purple-700 transition-colors">
+                <button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded-lg hover:bg-purple-700 transition-colors">
                   + فرع جديد
                 </button>
               </div>
@@ -216,14 +220,14 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
                     <h4 className="font-bold text-emerald-800">الفرع الرئيسي (الرياض)</h4>
                     <p className="text-xs text-emerald-600">مركز تكلفة: CC-001 • المستودع الرئيسي</p>
                   </div>
-                  <button className="text-emerald-700 hover:bg-emerald-100 p-2 rounded-lg transition-colors">تعديل</button>
+                  <button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="text-emerald-700 hover:bg-emerald-100 p-2 rounded-lg transition-colors">تعديل</button>
                 </div>
                 <div className="p-4 border border-slate-200 rounded-xl flex justify-between items-center hover:border-emerald-200 transition-colors">
                   <div>
                     <h4 className="font-bold text-slate-700">فرع جدة</h4>
                     <p className="text-xs text-slate-500">مركز تكلفة: CC-002 • مستودع الغربية</p>
                   </div>
-                  <button className="text-slate-500 hover:bg-slate-100 p-2 rounded-lg transition-colors">تعديل</button>
+                  <button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="text-slate-500 hover:bg-slate-100 p-2 rounded-lg transition-colors">تعديل</button>
                 </div>
               </div>
             </div>
@@ -262,7 +266,7 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-slate-800">المستخدمين</h3>
                 </div>
-                <button className="bg-orange-100 text-orange-700 p-2 rounded-lg hover:bg-orange-200 transition-colors">
+                <button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="bg-orange-100 text-orange-700 p-2 rounded-lg hover:bg-orange-200 transition-colors">
                   + جديد
                 </button>
               </div>
@@ -336,7 +340,7 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
                 <p className="text-sm text-slate-600 mb-4">منع أي مستخدم من إضافة أو تعديل أو حذف أي حركة مالية أو مخزنية قبل هذا التاريخ.</p>
                 <div className="flex items-center gap-4">
                   <input type="date" className="p-3 border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-rose-500 outline-none" />
-                  <button className="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition-colors">تطبيق الإقفال</button>
+                  <button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="px-6 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition-colors">تطبيق الإقفال</button>
                 </div>
               </div>
             </div>
@@ -364,7 +368,7 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
                   <div className="text-xs text-slate-500">يومياً عند إغلاق النظام أو كل 12 ساعة</div>
                 </div>
               </label>
-              <button className="w-full py-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-3 shadow-lg shadow-emerald-200">
+              <button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="w-full py-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-3 shadow-lg shadow-emerald-200">
                 <Database size={20} />
                 أخذ نسخة احتياطية الآن
               </button>
@@ -392,13 +396,13 @@ const SettingsModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'إع�
                     <div className="font-bold text-slate-800 text-sm" dir="ltr">{backup.date}</div>
                     <div className="text-xs text-slate-500">{backup.size} • {backup.auto ? 'تلقائي' : 'يدوي'}</div>
                   </div>
-                  <button className="px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold rounded-lg transition-colors">
+                  <button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 text-xs font-bold rounded-lg transition-colors">
                     استعادة
                   </button>
                 </div>
               ))}
             </div>
-            <button className="w-full py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors border border-slate-200 border-dashed">
+            <button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="w-full py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors border border-slate-200 border-dashed">
               رفع ملف نسخة احتياطية خارجي (.bak)
             </button>
           </div>

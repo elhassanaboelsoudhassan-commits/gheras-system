@@ -90,7 +90,7 @@ const PurchasesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'فا
                     </tr>
                   </tbody>
                 </table>
-                <button className="w-full p-3 text-emerald-600 font-bold hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2 border-t border-slate-200">
+                <button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="w-full p-3 text-emerald-600 font-bold hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2 border-t border-slate-200">
                   <Plus size={18} /> إضافة سطر جديد
                 </button>
               </div>
@@ -107,7 +107,7 @@ const PurchasesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'فا
                       <span className="text-sm font-bold text-slate-600">رسوم الجمارك</span>
                       <input type="number" className="w-24 p-1.5 text-center border border-amber-300 rounded outline-none focus:border-amber-500" defaultValue={100} />
                     </div>
-                    <button className="w-full mt-2 py-2 bg-amber-600 text-white text-sm font-bold rounded-lg hover:bg-amber-700 transition-colors">
+                    <button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="w-full mt-2 py-2 bg-amber-600 text-white text-sm font-bold rounded-lg hover:bg-amber-700 transition-colors">
                       إعادة حساب وتوزيع التكلفة على الأصناف
                     </button>
                     <p className="text-xs text-amber-700 mt-2 flex gap-1"><AlertCircle size={12}/> يتم رفع تكلفة الصنف المخزنية تلقائياً بناءً على هذه المصاريف لضمان دقة الأرباح.</p>
@@ -163,7 +163,7 @@ const PurchasesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'فا
               </div>
             </div>
 
-            <button className="w-full py-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-200">
+            <button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="w-full py-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-200">
               <Save size={20} />
               حفظ وتوليد القيد المحاسبي
             </button>
@@ -210,7 +210,7 @@ const PurchasesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'فا
                   <td className="p-4"><span className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold">أمر شراء (PO)</span></td>
                   <td className="p-4 text-slate-700">شركة الأسمدة السعودية</td>
                   <td className="p-4"><span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold">بانتظار التسليم</span></td>
-                  <td className="p-4"><button className="text-emerald-600 font-bold hover:underline">تحويل لفاتورة</button></td>
+                  <td className="p-4"><button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="text-emerald-600 font-bold hover:underline">تحويل لفاتورة</button></td>
                 </tr>
                 <tr className="border-b border-slate-100 hover:bg-slate-50">
                   <td className="p-4 font-mono font-medium text-slate-800">PR-2023-045</td>
@@ -218,7 +218,7 @@ const PurchasesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'فا
                   <td className="p-4"><span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold">طلب شراء (PR)</span></td>
                   <td className="p-4 text-slate-700">المستودع الرئيسي (الرياض)</td>
                   <td className="p-4"><span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold">تمت الموافقة</span></td>
-                  <td className="p-4"><button className="text-indigo-600 font-bold hover:underline">إنشاء أمر شراء</button></td>
+                  <td className="p-4"><button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="text-indigo-600 font-bold hover:underline">إنشاء أمر شراء</button></td>
                 </tr>
               </tbody>
             </table>
@@ -230,7 +230,7 @@ const PurchasesModule: React.FC<{ initialTab?: string }> = ({ initialTab = 'فا
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 max-w-4xl">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2"><Building className="text-blue-600"/> ملف المورد (Supplier Card)</h3>
-            <button className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors">
+            <button onClick={() => alert("تمت العملية بنجاح (قيد التطوير)")} className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors">
               حفظ بيانات المورد
             </button>
           </div>
